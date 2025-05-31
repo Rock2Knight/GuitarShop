@@ -1,0 +1,60 @@
+version: '3.10'  # версия docker compose
+
+services:   
+
+  postgres:
+    image: postgres:16                               # образ для постгреса 
+    container_name: postgres_container               # имя контейнера
+    environment:                                     # переменные окружения postgres
+      POSTGRES_USER: ilshat_user
+      POSTGRES_PASSWORD: 12345678
+      POSTGRES_DB: ilshat_db
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5433:5432"                # По какому порту подключаться к postgres
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data/pgdata  # каталог, в котором хранятся данные
+    networks:
+    - guitar_shop_network          # К какой сети подсоединяется
+    command: >                     # команда для запуска БД в докере
+      postgres -c max_connections=1000
+               -c shared_buffers=256MB
+               -c effective_cache_size=768MB
+               -c maintenance_work_mem=64MB
+               -c checkpoint_completion_target=0.7
+               -c wal_buffers=16MB
+               -c default_statistics_target=100
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ilshat_user -d ilshat_db" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    tty: true
+    stdin_open: true
+
+  backend:           # сервис приложения
+    build:           # настройки сборки
+      context: .               
+      dockerfile: Dockerfile     # Ссылка на Dockerfile
+    container_name: guitar_shop  # имя контейнера
+    ports:
+      - "8000:8000"              # порты
+    volumes:
+      - .:/python                # место хранения данных под приложение
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://ilshat_user:12345678@postgres:5432/ilshat_db  # URL для подключения к БД
+    networks:
+      - guitar_shop_network      # сеть, к которой подключается приложение
+    #depends_on:                 # настройки зависимостей
+    #  postgres:                           # зависит от сервиса postgres
+    #    condition: service_healthy
+    restart: unless-stopped
+
+volumes:             # настройки томов
+  pgdata:            
+    driver: local    # Драйвер для тома pgdata
+
+networks:                # настройки сетей
+  guitar_shop_network:  
+    driver: bridge       # драйвер для сети - мост
