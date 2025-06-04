@@ -1,7 +1,7 @@
 import enum
 from datetime import date
 
-from sqlalchemy import ForeignKey, Date, CheckConstraint
+from sqlalchemy import ForeignKey, Date, CheckConstraint, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from database import Base, str_an, uniq_str_an
 
@@ -153,7 +153,7 @@ class User(Base):
     __tablename__ = "user"
 
     email: Mapped[uniq_str_an]
-    passhash: Mapped[int] = mapped_column(nullable=False, unique=True)
+    passhash: Mapped[int] = mapped_column(BigInteger, nullable=False, unique=True)
     username: Mapped[uniq_str_an]
 
     cart: Mapped["Cart"] = relationship(
