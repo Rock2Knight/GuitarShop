@@ -50,6 +50,8 @@ services:
     #  postgres:                           # зависит от сервиса postgres
     #    condition: service_healthy
     restart: unless-stopped
+    tty: true                   # Принудительно открыть интерактивный вывод
+    stdin_open: true            # Открыть STDIN
 
 volumes:             # настройки томов
   pgdata:            

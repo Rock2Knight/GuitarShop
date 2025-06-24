@@ -1,6 +1,7 @@
 from typing_extensions import Self
 
 from pydantic import model_validator, constr, conint, confloat
+from logger import logger
 
 from dto.product import ProductDto
 
@@ -40,18 +41,19 @@ class GuitarDto:
         
 
     class Update(ProductDto.Update):
-        guitar_type: constr(max_length=20) | None
-        shape: constr(max_length=30) | None
-        fret_count: conint(le=25) | None
-        recorder_config: constr(max_length=10) | None
-        fingerboard_material: str | None
-        body_material: str | None
+        guitar_type: constr(max_length=20) | None = None
+        shape: constr(max_length=30) | None = None
+        fret_count: conint(le=25) | None = None
+        recorder_config: constr(max_length=10) | None = None
+        fingerboard_material: str | None = None
+        body_material: str | None = None
 
         @model_validator(mode='after')
         def validate_guitar(self) -> Self:
+            logger.debug(f"DTO is validated")
 
             gtype_allowed = {"Acoustic", "Electric", }
-            if self.guitar_type not in gtype_allowed:
+            if self.guitar_type and self.guitar_type not in gtype_allowed:
                 raise ValueError(f'Product Type must be one of {gtype_allowed}')
 
             shape_allowed = {"Classic", "Les Paul", "Stratocaster",
@@ -59,7 +61,7 @@ class GuitarDto:
                             "SG", "PRS", "Flying V", "Mocking Bird",
                             "Warlock", "RR", "Star", "Ice Man", 
                             "FireBird", "Jaguar", "Mustang", "Jag-Stang"}
-            if self.shape not in shape_allowed:
+            if self.shape and self.shape not in shape_allowed:
                 raise ValueError(f'Shape must be one of {shape_allowed}')
 
             configs = {'s-s', 's-s-s', 'h-h', 's-s-h', 'h-s',

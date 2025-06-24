@@ -1,9 +1,9 @@
 from typing import Type, TypeVar, Any
 
-from loguru import logger
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from logger import logger
 from database import connection
 
 T = TypeVar('T')  # Generic тип для модели
@@ -40,10 +40,12 @@ class ModelLoader:
 
     @classmethod
     @connection
-    async def update(cls, session: AsyncSession, item_id: int, **kwargs) -> T | None:
+    async def update(cls, session: AsyncSession, **kwargs) -> T | None:
         """
         Обновляет объект
         """
+        item_id = kwargs.pop('item_id')
+
         query_select = select(cls.model).filter_by(id=item_id)
         item = await session.scalars(query_select)
 

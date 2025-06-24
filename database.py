@@ -4,6 +4,7 @@ from functools import wraps
 from sqlalchemy import Integer, func
 from sqlalchemy.orm import DeclarativeBase, declared_attr, Mapped, mapped_column, class_mapper
 from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine
+from logger import logger
 
 from config import settings
 
@@ -23,12 +24,13 @@ def connection(method):
 
     @wraps(method)
     async def wrapper(*args, **kwargs):
+
+        kwargs = {k: v for k, v in kwargs.items() if v is not None}
         if 'session' in kwargs.keys():
             kwargs.pop('session')
 
         async with async_session_maker() as session:
             try:
-                # Явно не открываем транзакции, так как они уже есть в контексте
                 return await method(*args, session=session, **kwargs)
             except Exception as e:
                 await session.rollback()  # Откатываем сессию при ошибке

@@ -9,4 +9,4 @@ RUN pip3 install -r requirements.txt && \
     wget -O /wait-for-it.sh https://github.com/vishnubob/wait-for-it/raw/master/wait-for-it.sh && \
     chmod +x /wait-for-it.sh
 
-CMD ["sh", "-c", "/wait-for-it.sh postgres:5433 -- alembic upgrade head && python3 main.py"]
+CMD ["sh", "-c", "/wait-for-it.sh postgres:5433 -- alembic upgrade head && python3 -u main.py"]

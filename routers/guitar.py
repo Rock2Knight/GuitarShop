@@ -3,6 +3,8 @@ from access.base_access import access_model
 from dto.guitar import GuitarDto
 from loaders.guitar import GuitarLoader
 
+from logger import logger
+
 guitar_router = APIRouter(prefix="/guitar", tags=["Гитары"])
 
 @guitar_router.get("/{id}")
@@ -32,7 +34,7 @@ async def patch_guitar(id: int, guitar_dto: GuitarDto.Update, response: Response
     guitar_resp = await access_model(loader_class=GuitarLoader, **guitar_dump)
     if isinstance(guitar_resp, HTTPException):
         response.status_code = guitar_resp.status_code
-        return HTTPException(status_code=guitar_resp.status_code)
+        raise HTTPException(status_code=guitar_resp.status_code, detail=guitar_resp.detail)
     response.status_code = status.HTTP_201_CREATED
     return guitar_resp
     
