@@ -6,3 +6,7 @@ asyncpg==0.29.0
 fastapi
 uvicorn
 loguru==0.7.3
+httpx
+pytest
+anyio
+pytest-asyncio>=0.20.0
