@@ -38,7 +38,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: sh -c "alembic upgrade head && pytest -v"
+    command: sh -c "pytest -vv"
     ports:
       - "8000:8000"              # порты
     volumes:

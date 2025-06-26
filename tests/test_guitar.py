@@ -1,10 +1,12 @@
 """This module contains tests for guitars."""
 from datetime import datetime
+import asyncio
 
 import pytest
-from sqlalchemy import select
+from sqlalchemy import select, delete
 
 from models import Guitar
+from logger import logger
 
 
 @pytest.mark.asyncio(scope="session")
@@ -18,18 +20,24 @@ async def test_get_guitar(client, test_data):
 @pytest.mark.asyncio(scope="session")
 async def test_create_guitar(client, async_session_maker, test_data):
     """Testing create a guitar by POST-request."""
-    response = await client.post("/guitar/", json=test_data["TEST_BODY_FOR_CREATED_GUITAR"])
+    TEST_BODY_FOR_CREATED_GUITAR = test_data["TEST_BODY_FOR_CREATED_GUITAR"]
+    async with async_session_maker() as async_session:
+        query_delete = delete(Guitar).filter_by(name=TEST_BODY_FOR_CREATED_GUITAR["name"])
+        await async_session.execute(query_delete)
+        await async_session.commit()
+
+    response = await client.post("/guitar/", json=TEST_BODY_FOR_CREATED_GUITAR)
     assert response.status_code == 201
 
     response_body = response.json()
+    print(f"Response body {response_body}")
     created_guitar = None
 
     async with async_session_maker() as async_session:
-        date_str = response_body["created_at"]
-        time_from_response = datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S.%f")
-        created_guitar = await async_session.execute(select(Guitar).where(Guitar.created_at == time_from_response))
+        name = response_body["name"]
+        created_guitar = await async_session.execute(select(Guitar).where(Guitar.name == name))
         created_guitar = created_guitar.scalars().first()
         created_guitar = await created_guitar.to_dict()
 
-    for key in (k for k in created_guitar.keys() if k in test_data["TEST_BODY_FOR_CREATED_GUITAR"].keys()):
-        assert created_guitar.get(key) == test_data["TEST_BODY_FOR_CREATED_GUITAR"].get(key)
+    for key in (k for k in created_guitar.keys() if k in TEST_BODY_FOR_CREATED_GUITAR.keys()):
+        assert created_guitar.get(key) == TEST_BODY_FOR_CREATED_GUITAR.get(key)
