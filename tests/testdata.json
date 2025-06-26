@@ -26,5 +26,9 @@
         "recorder_config": "h-h",
         "fingerboard_material": "клен",
         "body_material": "тополь"
+    },
+    "TEST_UPDATED_DATA_FOR_GUITAR": {
+        "description": "Это очень крутая гитара для тяжелой музыки! Это точно ваш выбор!",
+        "price": 22000
     }
 }
