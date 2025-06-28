@@ -11,11 +11,7 @@ async def get_effect(id: int, response: Response):
     effect_dump = {'method': 'get', 'id': id}
     effect_resp = await access_model(loader_class=EffectLoader, **effect_dump)
     
-    if isinstance(effect_resp, dict):
-        return effect_resp
-    else:
-        response.status_code = status.HTTP_404_NOT_FOUND
-        return effect_resp     # Если возникла ошибка
+    return effect_resp
 
 
 @effect_router.post("/", status_code=status.HTTP_201_CREATED)
@@ -38,7 +34,7 @@ async def patch_effect(id: int, effect_dto: EffectPedalDto.Update, response: Res
     
 
 @effect_router.delete("/{id}")
-async def delete_effect(response: Response):
+async def delete_effect(id: int, response: Response):
 
     effect_dump = {'method': 'delete', 'id': id}
     effect_resp = await access_model(loader_class=EffectLoader, **effect_dump)

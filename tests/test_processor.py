@@ -1,4 +1,4 @@
-"""This module contains tests for combo amplifiers."""
+"""This module contains tests for guitar processors."""
 import pytest
 from sqlalchemy import select, delete
 
@@ -89,21 +89,21 @@ async def test_update_processor(client, model_factory, async_session_maker, test
     
     # Проверяем обновленные данные в БД
     async with async_session_maker() as async_session:
-        updated_combo_ampf = await async_session.execute(
+        updated_processor = await async_session.execute(
             select(Processor).
             where(Processor.id == processor_id)
         )
-        updated_combo_ampf = updated_combo_ampf.scalars().first()
-        updated_combo_ampf = await updated_combo_ampf.to_dict()
+        updated_processor = updated_processor.scalars().first()
+        updated_processor = await updated_processor.to_dict()
         
         # Проверяем обновленные поля
-        for key in (k for k in updated_combo_ampf.keys() if k in test_json_update.keys()):
-            assert updated_combo_ampf[key] == test_json_update[key]
+        for key in (k for k in updated_processor.keys() if k in test_json_update.keys()):
+            assert updated_processor[key] == test_json_update[key]
         
         # Проверяем, что другие поля не изменились
         non_updated_keys = set(test_json_create.keys()) - set(test_json_update.keys())
-        for key in (k for k in updated_combo_ampf.keys() if k in non_updated_keys):
-            assert updated_combo_ampf[key] == test_json_create[key]
+        for key in (k for k in updated_processor.keys() if k in non_updated_keys):
+            assert updated_processor[key] == test_json_create[key]
 
     async with async_session_maker() as async_session:
         await model_factory.delete(async_session, created_processor)

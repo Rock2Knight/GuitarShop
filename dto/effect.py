@@ -10,4 +10,4 @@ class EffectPedalDto(ProductDto):
         effect: str
 
     class Update(ProductDto.Update):
-        effect: str | None
+        effect: str | None = None
