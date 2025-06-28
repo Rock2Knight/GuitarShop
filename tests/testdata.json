@@ -10,10 +10,7 @@
         "product_type": "Guitar",
         "name": "IBANEZ GRX40-BKN",
         "quantity": 30,
-        "price": 27000,
-        "id": 1,
-        "created_at": "2025-06-26T14:30:57.512767",
-        "updated_at": "2025-06-26T14:30:57.512767"
+        "price": 27000
     },
     "TEST_BODY_FOR_CREATED_GUITAR": {
         "product_type": "Guitar",
@@ -30,5 +27,72 @@
     "TEST_UPDATED_DATA_FOR_GUITAR": {
         "description": "Это очень крутая гитара для тяжелой музыки! Это точно ваш выбор!",
         "price": 22000
+    },
+    "FIRST_EXPECTED_COMBO_AMPLIFIER": {
+        "description": null,
+        "product_type": "Combo Amplifier",
+        "name": "IBANEZ IBZ10GV2",
+        "quantity": 30,
+        "price": 27000,
+        "power": 15,
+        "channels_count": 2,
+        "combo_type": "Transistor",
+        "effects": "есть"
+    },
+    "TEST_BODY_FOR_COMBO_AMPLIFIER": {
+        "product_type": "Combo Amplifier",
+        "name": "BOSS KTN-50 Gen3",
+        "quantity": 22,
+        "price": 34390,
+        "power": 50,
+        "channels_count": 2,
+        "combo_type": "Transistor",
+        "effects": "есть"
+    },
+    "TEST_UPDATED_DATA_FOR_COMBO_AMPLIFIER": {
+        "description": "Этот комбо-усилитель - точно для вас!",
+        "price": 30000
+    },
+    "FIRST_EXPECTED_PROCESSOR": {
+        "description": null,
+        "product_type": "Processor",
+        "name": "Valeton GP-100",
+        "quantity": 40,
+        "price": 14800,
+        "express_pedal": "есть",
+        "instrument_type": "гитара",
+        "screen_type": "цветной"
+    },
+    "TEST_BODY_FOR_PROCESSOR": {
+        "product_type": "Processor",
+        "name": "BOSS RC-500",
+        "quantity": 34,
+        "price": 33490,
+        "express_pedal": "есть",
+        "instrument_type": "универсальный",
+        "screen_type": "универсальный"
+    },
+    "TEST_UPDATED_DATA_FOR_PROCESSOR": {
+        "description": "Этот процессор - точно ваш выбор!",
+        "price": 25000
+    },
+    "FIRST_EXPECTED_EFFECT": {
+        "description": null,
+        "product_type": "Effect Pedal",
+        "name": "BOSS DS-1",
+        "quantity": 40,
+        "price": 9900,
+        "effect": "distortion"
+    },
+    "TEST_BODY_FOR_EFFECT": {
+        "product_type": "Effect Pedal",
+        "name": "Nux Cherub NOD-2 Tube Man Overdrive",
+        "quantity": 50,
+        "price": 3970,
+        "effect": "overdrive"
+    },
+    "TEST_UPDATED_DATA_FOR_EFFECT": {
+        "description": "Вам точно нужна данная педаль эффектов!",
+        "price": 3500
     }
 }

@@ -14,15 +14,26 @@ class ComboAmpfDto(ProductDto):
 
         @model_validator(mode="after")
         def validate_combo_ampf(self) -> Self:
-            pass
+            if not isinstance(self.effects, str):
+                raise ValueError("В эффектах должна быть прописана строка!")
+            if self.effects.lower() not in {"есть", "нет"}:
+                raise ValueError("Невалидные значения эффектов")
+            
+            return self
 
 
     class Update(ProductDto.Update):
-        combo_type: constr(min_length=1) | None
-        effects: str | None
-        channels_count: conint(gt=0) | None
-        power: confloat(gt=0) | None
+        combo_type: constr(min_length=1) | None = None
+        effects: str | None = None
+        channels_count: conint(gt=0) | None = None
+        power: confloat(gt=0) | None = None
 
         @model_validator(mode="after")
         def validate_combo_ampf(self) -> Self:
-            pass
+            if self.effects is not None:
+                if not isinstance(self.effects, str):
+                    raise ValueError("В эффектах должна быть прописана строка!")
+                if self.effects.lower() not in {"есть", "нет"}:
+                    raise ValueError("Невалидные значения эффектов")
+                
+            return self
