@@ -4,16 +4,16 @@ from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from logger import logger
-from database import connection
+from database import connection, Base
 
-T = TypeVar('T')  # Generic тип для модели
+ModelClass = TypeVar('ModelClass', bound=Base)  # Generic тип для модели
 
 class ModelLoader:
-    model: Type[T]  # Должен быть переопределен в дочерних классах
+    model: Type[ModelClass]  # Должен быть переопределен в дочерних классах
 
     @classmethod
     @connection
-    async def get(cls, session: AsyncSession, item_id: int) -> T | None:
+    async def get(cls, session: AsyncSession, item_id: int) -> ModelClass | None:
         """
         Получает объект по ID
         """
@@ -27,7 +27,7 @@ class ModelLoader:
 
     @classmethod
     @connection
-    async def create(cls, session: AsyncSession, **kwargs) -> T:
+    async def create(cls, session: AsyncSession, **kwargs) -> ModelClass:
         """
         Создает новый объект
         """
@@ -40,7 +40,7 @@ class ModelLoader:
 
     @classmethod
     @connection
-    async def update(cls, session: AsyncSession, **kwargs) -> T | None:
+    async def update(cls, session: AsyncSession, **kwargs) -> ModelClass | None:
         """
         Обновляет объект
         """

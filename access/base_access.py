@@ -5,10 +5,10 @@ from logger import logger
 
 from database import Base
 
-T = TypeVar('T', bound=Base)  # Generic тип для модели
+ModelClass = TypeVar('ModelClass', bound=Base)  # Generic тип для модели
 
 async def access_model(
-    loader_class: Type,  # Класс загрузчика (GuitarLoader, ProcessorLoader и т.д.)
+    loader_class: Type[ModelClass],  # Класс загрузчика (GuitarLoader, ProcessorLoader и т.д.)
     **kwargs
 ) -> Optional[dict | HTTPException]:
     """
