@@ -1,11 +1,8 @@
-from typing import Optional, Type, TypeVar
+from typing import Optional, Type
 
 from fastapi import HTTPException, status
-from logger import logger
 
-from database import Base
-
-ModelClass = TypeVar('ModelClass', bound=Base)  # Generic тип для модели
+from models import ModelClass
 
 async def access_model(
     loader_class: Type[ModelClass],  # Класс загрузчика (GuitarLoader, ProcessorLoader и т.д.)

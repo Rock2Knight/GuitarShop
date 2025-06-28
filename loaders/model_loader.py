@@ -1,12 +1,12 @@
-from typing import Type, TypeVar, Any
+from typing import Type, Any
 
-from sqlalchemy import select, delete
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from logger import logger
-from database import connection, Base
+from database import connection
+from models import ModelClass
 
-ModelClass = TypeVar('ModelClass', bound=Base)  # Generic тип для модели
 
 class ModelLoader:
     model: Type[ModelClass]  # Должен быть переопределен в дочерних классах

@@ -1,9 +1,12 @@
 import enum
 from datetime import date
+from typing import TypeVar
 
 from sqlalchemy import ForeignKey, Date, CheckConstraint, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from database import Base, str_an, uniq_str_an
+
+ModelClass = TypeVar('ModelClass', bound=Base)  # Generic тип для модели
 
 
 class ProductType(str, enum.Enum):
