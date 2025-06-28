@@ -59,7 +59,7 @@
         "name": "Valeton GP-100",
         "quantity": 40,
         "price": 14800,
-        "express_pedal": "есть",
+        "express_pedal": true,
         "instrument_type": "гитара",
         "screen_type": "цветной"
     },
@@ -68,7 +68,7 @@
         "name": "BOSS RC-500",
         "quantity": 34,
         "price": 33490,
-        "express_pedal": "есть",
+        "express_pedal": true,
         "instrument_type": "универсальный",
         "screen_type": "универсальный"
     },

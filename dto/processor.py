@@ -12,6 +12,6 @@ class ProcessorDto(ProductDto):
         screen_type: str
 
     class Update(ProductDto.Update):
-        express_pedal: bool | None = False
-        instrument_type: str | None
-        screen_type: str | None
+        express_pedal: bool | None = None
+        instrument_type: str | None = None
+        screen_type: str | None = None

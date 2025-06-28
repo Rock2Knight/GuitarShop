@@ -26,22 +26,23 @@ async def create_processor(processor_dto: ProcessorDto.Create):
 
 
 @processor_router.patch("/{id}")
-async def patch_processor(processor_dto: ProcessorDto.Update, response: Response):
+async def patch_processor(id: int, processor_dto: ProcessorDto.Update, response: Response):
 
-    processor_dump = {'method': 'patch', 'guitar_id': id, 'dto': processor_dto.model_dump()}
+    processor_dump = {'method': 'patch', 'id': id, 'dto': processor_dto.model_dump()}
     processor_resp = await access_model(loader_class=ProcessorLoader, **processor_dump)
     if isinstance(processor_resp, HTTPException):
-        response.status_code = processor_resp.status_code
-        return HTTPException(status_code=processor_resp.status_code)
+        if processor_resp.status_code > 500:
+            raise HTTPException(status_code=500, detail=processor_resp.detail)
     response.status_code = status.HTTP_201_CREATED
     return processor_resp
     
 
 @processor_router.delete("/{id}")
-async def delete_processor(response: Response):
+async def delete_processor(id: int, response: Response):
 
     processor_dump = {'method': 'delete', 'id': id}
     processor_resp = await access_model(loader_class=ProcessorLoader, **processor_dump)
     if isinstance(processor_resp, HTTPException):
-        response.status_code = processor_resp.status_code
+        if processor_resp.status_code > 500:
+            raise HTTPException(status_code=500, detail=processor_resp.detail)
     return processor_resp     # Если возникла ошибка
