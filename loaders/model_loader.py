@@ -1,3 +1,4 @@
+from abc import ABC
 from typing import Type, Any, ClassVar
 
 from sqlalchemy import select
@@ -7,7 +8,7 @@ from logger import logger
 from database import connection
 
 
-class ModelLoader[ModelClass]:
+class ModelLoader[ModelClass](ABC):
     model: ClassVar[type[ModelClass]]
 
     @classmethod
