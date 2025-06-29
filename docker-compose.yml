@@ -41,7 +41,7 @@ services:
     ports:
       - "8000:8000"              # порты
     volumes:
-      - .:/python                # место хранения данных под приложение
+      - .:/app                # место хранения данных под приложение
     environment:
       - DATABASE_URL=postgresql+asyncpg://ilshat_user:12345678@postgres:5432/ilshat_db  # URL для подключения к БД
     networks:

@@ -1,6 +1,0 @@
-from models import Guitar
-
-from loaders.model_loader import ModelLoader
-
-class GuitarLoader(ModelLoader[Guitar]):
-    model = Guitar

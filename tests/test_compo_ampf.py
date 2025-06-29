@@ -1,5 +1,5 @@
 """This module contains tests for combo amplifiers."""
-from models import ComboAmplifier
+from app.models import ComboAmplifier
 from tests.base_test_product import BaseTestProduct
 
 

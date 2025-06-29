@@ -1,5 +1,5 @@
 """This module contains tests for effect pedals."""
-from models import EffectPedal
+from app.models import EffectPedal
 from tests.base_test_product import BaseTestProduct
 
 

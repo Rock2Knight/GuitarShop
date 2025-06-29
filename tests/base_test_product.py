@@ -4,8 +4,8 @@ from typing import Type, TypeVar, Any
 import pytest
 from sqlalchemy import select, delete
 
-from models import Product
-from logger import logger
+from app.models import Product
+from app.logger import logger
 
 ProductModel = TypeVar("ProductModel", bound=Product)
 

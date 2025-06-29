@@ -1,5 +1,5 @@
 """This module contains tests for guitars."""
-from models import Guitar
+from app.models import Guitar
 from tests.base_test_product import BaseTestProduct
 
 

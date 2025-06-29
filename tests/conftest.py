@@ -7,9 +7,9 @@ import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
-from config import settings
-from database import Base
-from main import app
+from app.config import settings
+from app.database import Base
+from app.main import app
 
 Model = TypeVar("Model", bound=Base)
 
