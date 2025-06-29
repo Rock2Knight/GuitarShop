@@ -1,5 +1,5 @@
-from models import ComboAmplifier
+from models import ComboAmplifier 
 from loaders.model_loader import ModelLoader
 
-class ComboAmpfLoader(ModelLoader):
-    model: ComboAmplifier = ComboAmplifier
+class ComboAmpfLoader(ModelLoader[ComboAmplifier]):
+    model = ComboAmplifier

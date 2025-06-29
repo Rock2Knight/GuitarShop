@@ -5,6 +5,7 @@ import pytest
 from sqlalchemy import select, delete
 
 from models import Product
+from logger import logger
 
 ProductModel = TypeVar("ProductModel", bound=Product)
 
@@ -35,6 +36,7 @@ class BaseTestProduct:
 
         response = await client.get(f"{cls.endpoint_prefix}/{expected_product.id}")
         response_body = response.json()
+        logger.debug(f"Response body::{cls.product}: {response_body}")
         assert response.status_code in (200, 201)
 
         test_json["description"] = description

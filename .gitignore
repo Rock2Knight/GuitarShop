@@ -8,3 +8,4 @@
 /pgdata
 /logs
 /Dockerfile.test
+/.pytest_cache

@@ -2,17 +2,17 @@ from typing import Optional, Type
 
 from fastapi import HTTPException, status
 
-from models import ModelClass
+from loaders.model_loader import ModelLoader
 
 async def access_model(
-    loader_class: Type[ModelClass],  # Класс загрузчика (GuitarLoader, ProcessorLoader и т.д.)
+    loader_class: Type[ModelLoader],  # Класс загрузчика (GuitarLoader, ProcessorLoader и т.д.)
     **kwargs
 ) -> Optional[dict | HTTPException]:
     """
     Базовый обработчик CRUD-операций для моделей
     
     Args:
-        loader_class: Класс загрузчика, наследованный от BaseLoader
+        loader_class: Generic-класс загрузчика, наследованный от BaseLoader
         **kwargs:
             - method: get/post/patch/delete
             - id: ID объекта (для get/patch/delete)

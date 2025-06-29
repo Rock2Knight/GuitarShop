@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Response, status, HTTPException
+
 from access.base_access import access_model
 from dto.processor import ProcessorDto
 from loaders.processor import ProcessorLoader
@@ -9,7 +10,10 @@ processor_router = APIRouter(prefix="/processor", tags=["Гитарные про
 async def get_processor(id: int, response: Response):
 
     processor_dump = {'method': 'get', 'id': id}
-    processor_resp = await access_model(loader_class=ProcessorLoader, **processor_dump)
+    processor_resp = await access_model(
+        loader_class=ProcessorLoader,
+        **processor_dump
+    )
     
     if isinstance(processor_resp, dict):
         return processor_resp
@@ -22,14 +26,20 @@ async def get_processor(id: int, response: Response):
 async def create_processor(processor_dto: ProcessorDto.Create):
 
     processor_dump = {'method': 'post', 'dto': processor_dto.model_dump()}
-    return await access_model(loader_class=ProcessorLoader, **processor_dump)
+    return await access_model(
+        loader_class=ProcessorLoader,
+        **processor_dump
+    )
 
 
 @processor_router.patch("/{id}")
 async def patch_processor(id: int, processor_dto: ProcessorDto.Update, response: Response):
 
     processor_dump = {'method': 'patch', 'id': id, 'dto': processor_dto.model_dump()}
-    processor_resp = await access_model(loader_class=ProcessorLoader, **processor_dump)
+    processor_resp = await access_model(
+        loader_class=ProcessorLoader,
+        **processor_dump
+    )
     if isinstance(processor_resp, HTTPException):
         if processor_resp.status_code > 500:
             raise HTTPException(status_code=500, detail=processor_resp.detail)
@@ -41,7 +51,10 @@ async def patch_processor(id: int, processor_dto: ProcessorDto.Update, response:
 async def delete_processor(id: int, response: Response):
 
     processor_dump = {'method': 'delete', 'id': id}
-    processor_resp = await access_model(loader_class=ProcessorLoader, **processor_dump)
+    processor_resp = await access_model(
+        loader_class=ProcessorLoader, 
+        **processor_dump
+    )
     if isinstance(processor_resp, HTTPException):
         if processor_resp.status_code > 500:
             raise HTTPException(status_code=500, detail=processor_resp.detail)

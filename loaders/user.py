@@ -6,8 +6,8 @@ from database import connection
 from models import User, Cart
 from loaders.model_loader import ModelLoader
 
-class UserLoader(ModelLoader):
-    model: User = User
+class UserLoader(ModelLoader[User]):
+    #model: User = User
 
     @classmethod
     @connection
@@ -50,4 +50,4 @@ class UserLoader(ModelLoader):
                     await session.close()
             
         
-        return await ModelLoader.update(item_id=user_id, **kwargs)
+        return await ModelLoader[User].update(item_id=user_id, **kwargs)

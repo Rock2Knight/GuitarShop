@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Response, status, HTTPException
+
 from access.base_access import access_model
 from dto.guitar import GuitarDto
 from loaders.guitar import GuitarLoader
-
-from logger import logger
 
 guitar_router = APIRouter(prefix="/guitar", tags=["Гитары"])
 
@@ -11,7 +10,10 @@ guitar_router = APIRouter(prefix="/guitar", tags=["Гитары"])
 async def get_guitar(id: int, response: Response):
 
     guitar_dump = {'method': 'get', 'id': id}
-    guitar_resp = await access_model(loader_class=GuitarLoader, **guitar_dump)
+    guitar_resp = await access_model(
+        loader_class=GuitarLoader,
+        **guitar_dump
+    )
     
     if isinstance(guitar_resp, dict):
         return guitar_resp
@@ -24,14 +26,20 @@ async def get_guitar(id: int, response: Response):
 async def create_guitar(guitar_dto: GuitarDto.Create):
 
     guitar_dump = {'method': 'post', 'dto': guitar_dto.model_dump()}
-    return await access_model(loader_class=GuitarLoader, **guitar_dump)
+    return await access_model(
+        loader_class=GuitarLoader,
+        **guitar_dump
+    )
 
 
 @guitar_router.patch("/{id}")
 async def patch_guitar(id: int, guitar_dto: GuitarDto.Update, response: Response):
 
     guitar_dump = {'method': 'patch', 'id': id, 'dto': guitar_dto.model_dump()}
-    guitar_resp = await access_model(loader_class=GuitarLoader, **guitar_dump)
+    guitar_resp = await access_model(
+        loader_class=GuitarLoader,
+        **guitar_dump
+    )
     if isinstance(guitar_resp, HTTPException):
         response.status_code = guitar_resp.status_code
         raise HTTPException(status_code=guitar_resp.status_code, detail=guitar_resp.detail)
@@ -43,7 +51,10 @@ async def patch_guitar(id: int, guitar_dto: GuitarDto.Update, response: Response
 async def delete_guitar(id: int, response: Response):
 
     guitar_dump = {'method': 'delete', 'id': id}
-    guitar_resp = await access_model(loader_class=GuitarLoader, **guitar_dump)
+    guitar_resp = await access_model(
+        loader_class=GuitarLoader,
+        **guitar_dump
+    )
     if isinstance(guitar_resp, HTTPException):
         response.status_code = guitar_resp.status_code
     return guitar_resp     # Если возникла ошибка

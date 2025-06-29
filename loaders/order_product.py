@@ -5,8 +5,8 @@ from database import connection
 from models import Order, OrderProduct
 from loaders.model_loader import ModelLoader
 
-class OrderProductLoader(ModelLoader):
-    model: OrderProduct = OrderProduct
+class OrderProductLoader(ModelLoader[OrderProduct]):
+    #model: OrderProduct = OrderProduct
 
     @classmethod
     @connection

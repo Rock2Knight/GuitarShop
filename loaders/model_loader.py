@@ -1,15 +1,14 @@
-from typing import Type, Any
+from typing import Type, Any, ClassVar
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from logger import logger
 from database import connection
-from models import ModelClass
 
 
-class ModelLoader:
-    model: Type[ModelClass]  # Должен быть переопределен в дочерних классах
+class ModelLoader[ModelClass]:
+    model: ClassVar[type[ModelClass]]
 
     @classmethod
     @connection

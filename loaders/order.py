@@ -8,8 +8,8 @@ from database import connection
 from models import Order, OrderStatus
 from loaders.model_loader import ModelLoader
 
-class OrderLoader(ModelLoader):
-    model: Order = Order
+class OrderLoader(ModelLoader[Order]):
+    #model: Order = Order
 
     @classmethod
     @connection
