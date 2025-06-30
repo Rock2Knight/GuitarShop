@@ -13,6 +13,7 @@ async def get_cart_product(id: int, response: Response):
     cart_product_resp = await access_model(loader_class=CartProductLoader, **cart_product_dump)
     
     if isinstance(cart_product_resp, dict):
+        response.status_code = status.HTTP_200_OK
         return cart_product_resp
     else:
         response.status_code = status.HTTP_404_NOT_FOUND

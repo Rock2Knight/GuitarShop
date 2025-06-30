@@ -94,5 +94,18 @@
     "TEST_UPDATED_DATA_FOR_EFFECT": {
         "description": "Вам точно нужна данная педаль эффектов!",
         "price": 3500
+    },
+    "FIRST_EXPECTED_USER": {
+        "username": "Sanya12324",
+        "email": "sanya@mail.ru",
+        "password": "asdfsdfds"
+    },
+    "TEST_BODY_FOR_USER": {
+        "username": "Egor12324",
+        "email": "egor@yandex.ru",
+        "password": "fdsgdffsfe"
+    },
+    "TEST_UPDATED_DATA_FOR_USER": {
+        "username": "Ekaterina228"
     }
 }

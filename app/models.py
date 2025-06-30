@@ -164,12 +164,14 @@ class User(Base):
         "Cart", 
         back_populates="user", 
         uselist=False, 
-        lazy="joined"
+        lazy="joined",
+        cascade="all, delete-orphan"
     )
 
     orders: Mapped[list["Order"]] = relationship(
         "Order", 
-        back_populates="user"
+        back_populates="user",
+        cascade="all, delete-orphan"
     )
 
 

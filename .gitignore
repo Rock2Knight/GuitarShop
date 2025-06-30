@@ -9,3 +9,4 @@
 /logs
 /Dockerfile.test
 /.pytest_cache
+/app/.env

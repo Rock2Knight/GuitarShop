@@ -1,11 +1,11 @@
 from typing import Optional
 
-from loguru import logger
 from fastapi import HTTPException, status
 
 from app.dto.user import UserDto
 from app.loaders.user import UserLoader
 from app.models import User
+from app.logger import logger
 
 
 async def access_user(**kwargs) -> Optional[User | HTTPException]:
@@ -19,15 +19,15 @@ async def access_user(**kwargs) -> Optional[User | HTTPException]:
                 return user_dump
             except Exception as e:
                 logger.info(f"Exception: {e}")
-                return HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+                return HTTPException(status_code=500, detail=e.detail)
         case "post":
             try:
                 user = await UserLoader.create(**kwargs['dto'])
                 user_dump = await user.to_dict()
                 user_dump.pop('passhash')
                 return user_dump
-            except Exception:
-                return HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                return HTTPException(status_code=500, detail=e.detail)
         case 'patch':
             try:
                 id = kwargs.pop('id')
@@ -35,11 +35,12 @@ async def access_user(**kwargs) -> Optional[User | HTTPException]:
                 user_dump = await user.to_dict()
                 user_dump.pop('passhash')
                 return user_dump
-            except Exception:
-                return HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                logger.debug(f"Details: {e.detail}")
+                return HTTPException(status_code=500, detail=e.detail)
         case "delete":
             try:
                 user_dump = UserLoader.delete(item_id=kwargs['id'])
                 return user_dump
-            except Exception:
-                return HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                return HTTPException(status_code=500, detail=e.detail)

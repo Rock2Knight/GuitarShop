@@ -14,9 +14,10 @@ async def get_user(id: int, response: Response):
     user_resp = await access_user(**user_dump)
     
     if isinstance(user_resp, dict):
+        response.status_code = status.HTTP_200_OK
         return user_resp
     else:
-        response.status_code = status.HTTP_404_NOT_FOUND
+        response.status_code = 500
         return user_resp     # Если возникла ошибка
 
 
@@ -24,14 +25,14 @@ async def get_user(id: int, response: Response):
 async def create_user(user_dto: UserDto.Create):
 
     user_dump = {'method': 'post', 'dto': user_dto.model_dump()}
-    return await access_model(loader_class=UserLoader, **user_dump)
+    return await access_user(**user_dump)
 
 
 @user_router.patch("/{id}")
-async def patch_user(user_dto: UserDto.Update, response: Response):
+async def patch_user(id: int, user_dto: UserDto.Update, response: Response):
 
-    user_dump = {'method': 'patch', 'user_id': id, 'dto': user_dto.model_dump()}
-    user_resp = await access_model(loader_class=UserLoader, **user_dump)
+    user_dump = {'method': 'patch', 'id': id, 'dto': user_dto.model_dump()}
+    user_resp = await access_user(**user_dump)
     if isinstance(user_resp, HTTPException):
         response.status_code = user_resp.status_code
         return HTTPException(status_code=user_resp.status_code)
@@ -40,7 +41,7 @@ async def patch_user(user_dto: UserDto.Update, response: Response):
     
 
 @user_router.delete("/{id}")
-async def delete_user(response: Response):
+async def delete_user(id: int, response: Response):
 
     user_dump = {'method': 'delete', 'id': id}
     user_resp = await access_model(loader_class=UserLoader, **user_dump)

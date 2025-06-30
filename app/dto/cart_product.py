@@ -6,10 +6,10 @@ class CartProductDto:
 
     class Create(BaseModel):
         cart_id: conint(gt=0)
-        guitar_id: conint(gt=0) | None
-        combo_id: conint(gt=0) | None
-        processor_id: conint(gt=0) | None
-        effect_id: conint(gt=0) | None
+        guitar_id: conint(gt=0) | None = None
+        combo_id: conint(gt=0) | None = None
+        processor_id: conint(gt=0) | None = None
+        effect_id: conint(gt=0) | None = None
         quantity: conint(gt=0)
 
         @model_validator(mode='after')
@@ -27,12 +27,12 @@ class CartProductDto:
 
 
     class Update(BaseModel):
-        cart_id: conint(gt=0)
-        guitar_id: conint(gt=0) | None
-        combo_id: conint(gt=0) | None
-        processor_id: conint(gt=0) | None
-        effect_id: conint(gt=0) | None
-        quantity: conint(gt=0)
+        cart_id: conint(gt=0) | None = None
+        guitar_id: conint(gt=0) | None = None
+        combo_id: conint(gt=0) | None = None
+        processor_id: conint(gt=0) | None = None
+        effect_id: conint(gt=0) | None = None
+        quantity: conint(gt=0) | None = None
 
         @model_validator(mode='after')
         def validate_single_product(self) -> Self:
@@ -43,6 +43,6 @@ class CartProductDto:
                 self.effect_id
             ] if field is not None)
             
-            if provided_ids != 1:
+            if provided_ids > 1:
                 raise ValueError('Должен быть указан ровно один ID товара (гитара, комбо, процессор или эффект)')
             return self

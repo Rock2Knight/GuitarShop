@@ -43,7 +43,7 @@ services:
     volumes:
       - .:/app                # место хранения данных под приложение
     environment:
-      - DATABASE_URL=postgresql+asyncpg://ilshat_user:12345678@postgres:5432/ilshat_db  # URL для подключения к БД
+      - DATABASE_URL=postgresql+psycopg2://ilshat_user:12345678@postgres:5432/ilshat_db  # URL для подключения к БД
     networks:
       - guitar_shop_network      # сеть, к которой подключается приложение
     #depends_on:                 # настройки зависимостей

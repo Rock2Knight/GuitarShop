@@ -33,8 +33,12 @@ class ModelLoader[ModelClass](ABC):
         """
         item = cls.model(**kwargs)
         session.add(item)
-        await session.commit()
-        await session.refresh(item)
+        try:
+            await session.commit()
+            await session.refresh(item)
+        except Exception as e:
+            await session.rollback()
+            raise e
         return item
 
 
@@ -58,9 +62,13 @@ class ModelLoader[ModelClass](ABC):
             
         for key, value in kwargs.items():
             setattr(item, key, value)
-            
-        await session.commit()
-        await session.refresh(item)
+
+        try:    
+            await session.commit()
+            await session.refresh(item)
+        except Exception as e:
+            await session.rollback()
+            raise e
         return item
 
 
