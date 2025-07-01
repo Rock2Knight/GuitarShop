@@ -35,6 +35,13 @@ class CartProductLoader(ModelLoader[CartProduct]):
         query_select = select(cls.model).filter_by(id=cart_product_id)
         cart_product = await session.scalars(query_select)
 
+        if not cart_product:
+            return None
+        
+        cart_product = cart_product.first()
+        if not cart_product:
+            return None
+
         product_ids = {"guitar_id", "combo_id", "processor_id", "effect_id"}
         provided_ids = {k: v for k, v in kwargs.items() if k in product_ids and v is not None}
 

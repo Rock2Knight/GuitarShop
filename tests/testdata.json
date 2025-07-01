@@ -3,7 +3,6 @@
         "guitar_type": "Electric",
         "shape": "SuperStrat",
         "fret_count": 22,
-        "description": null,
         "recorder_config": "s-s-h",
         "fingerboard_material": "клен",
         "body_material": "тополь",
@@ -100,10 +99,15 @@
         "email": "sanya@mail.ru",
         "password": "asdfsdfds"
     },
-    "TEST_BODY_FOR_USER": {
+    "TEST_BODY_FOR_USER1": {
         "username": "Egor12324",
         "email": "egor@yandex.ru",
         "password": "fdsgdffsfe"
+    },
+    "TEST_BODY_FOR_USER2": {
+        "username": "Vasya12324",
+        "email": "vasya@yandex.ru",
+        "password": "sfefifndvfdklvfvmef"
     },
     "TEST_UPDATED_DATA_FOR_USER": {
         "username": "Ekaterina228"

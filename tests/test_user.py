@@ -38,18 +38,23 @@ async def test_get_user(client, async_session_maker, model_factory, removed_keys
         await model_factory.delete(async_session, expected_user)
 
 
+@pytest.mark.user
 @pytest.mark.asyncio(scope="session")
 async def test_create_user(client, async_session_maker, test_data):
     """Testing create an user by POST-request."""
-    test_json = test_data["TEST_BODY_FOR_USER"]
+    test_json = test_data["TEST_BODY_FOR_USER1"]
     async with async_session_maker() as async_session:
         query = delete(User)
         query = query.filter_by(email=test_json["email"])
         await async_session.execute(query)
         await async_session.commit()
 
+    if "passhash" in test_json.keys():
+        test_json.pop("passhash")
+        test_json["password"] = "dsfdgegregerfsdf"
     response = await client.post(f"/user/", json=test_json)
     response_body = response.json()
+    logger.debug(f"Response: {response_body}")
 
     assert response.status_code == 201
 
@@ -67,10 +72,11 @@ async def test_create_user(client, async_session_maker, test_data):
         assert created_user.get(key) == test_json.get(key)
 
 
+@pytest.mark.user
 @pytest.mark.asyncio(scope="session")
 async def test_update_user(client, model_factory, async_session_maker, test_data):
     """Testing partial update of an user by PATCH-request."""
-    test_json_create = test_data["TEST_BODY_FOR_USER"]
+    test_json_create = test_data["TEST_BODY_FOR_USER2"]
     test_json_update = test_data["TEST_UPDATED_DATA_FOR_USER"]
 
     async with async_session_maker() as async_session:
@@ -79,6 +85,7 @@ async def test_update_user(client, model_factory, async_session_maker, test_data
         await async_session.execute(query)
         await async_session.commit()
 
+    logger.debug(f"JSON for create: \n{test_json_create}")
     test_json_create["passhash"] = hash(test_json_create.pop("password"))
     created_user = await model_factory.create(
         model_class=User,
@@ -118,9 +125,9 @@ async def test_update_user(client, model_factory, async_session_maker, test_data
 
 
 @pytest.mark.asyncio(scope="session")
-async def test_delete_product(client, model_factory, async_session_maker, test_data):
+async def test_delete_user(client, model_factory, async_session_maker, test_data):
     """Testing deletion of a user by DELETE-request."""
-    test_json = test_data["TEST_BODY_FOR_USER"]
+    test_json = test_data["TEST_BODY_FOR_USER2"]
 
     async with async_session_maker() as async_session:
         query = delete(User)

@@ -188,6 +188,11 @@ class Cart(Base):
         lazy="joined"
     )
 
+    user: Mapped["User"] = relationship(
+        "User",
+        back_populates="cart"
+    )
+
 
 class CartProduct(Base):
     __tablename__ = "cart_product"
