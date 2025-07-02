@@ -86,7 +86,12 @@ async def test_update_user(client, model_factory, async_session_maker, test_data
         await async_session.commit()
 
     logger.debug(f"JSON for create: \n{test_json_create}")
-    test_json_create["passhash"] = hash(test_json_create.pop("password"))
+    if "passhash" not in test_json_create.keys():
+        if "password" in test_json_create.keys():
+            test_json_create["passhash"] = hash(test_json_create.pop("password"))
+        else:
+            test_json_create["passhash"] = hash("gergregerfre")
+
     created_user = await model_factory.create(
         model_class=User,
         **test_json_create

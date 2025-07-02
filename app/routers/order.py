@@ -15,7 +15,7 @@ async def get_order(id: int, response: Response):
     if isinstance(order_resp, dict):
         return order_resp
     else:
-        response.status_code = status.HTTP_404_NOT_FOUND
+        response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
         return order_resp     # Если возникла ошибка
 
 

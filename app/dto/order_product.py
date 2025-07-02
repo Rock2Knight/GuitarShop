@@ -6,10 +6,10 @@ class OrderProductDto:
 
     class Create(BaseModel):
         order_id: conint(gt=0)
-        guitar_id: conint(gt=0) | None
-        combo_id: conint(gt=0) | None
-        processor_id: conint(gt=0) | None
-        effect_id: conint(gt=0) | None
+        guitar_id: conint(gt=0) | None = None
+        combo_id: conint(gt=0) | None = None
+        processor_id: conint(gt=0) | None = None
+        effect_id: conint(gt=0) | None = None
         quantity: conint(gt=0)
 
         @model_validator(mode='after')
@@ -27,15 +27,15 @@ class OrderProductDto:
 
 
     class Update(BaseModel):
-        order_id: conint(gt=0)
-        guitar_id: conint(gt=0) | None
-        combo_id: conint(gt=0) | None
-        processor_id: conint(gt=0) | None
-        effect_id: conint(gt=0) | None
-        quantity: conint(gt=0)
+        order_id: conint(gt=0) | None = None
+        guitar_id: conint(gt=0) | None = None
+        combo_id: conint(gt=0) | None = None
+        processor_id: conint(gt=0) | None = None
+        effect_id: conint(gt=0) | None = None
+        quantity: conint(gt=0) | None = None
 
         @model_validator(mode='after')
-        def validate_single_product(self) -> Self:
+        def validat_single_product(self) -> Self:
             provided_ids = sum(1 for field in [
                 self.guitar_id, 
                 self.combo_id, 

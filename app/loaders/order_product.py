@@ -1,3 +1,5 @@
+from typing import override
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import connection
@@ -5,9 +7,10 @@ from app.models import Order, OrderProduct
 from app.loaders.model_loader import ModelLoader
 
 class OrderProductLoader(ModelLoader[OrderProduct]):
-    #model: OrderProduct = OrderProduct
+    model: OrderProduct = OrderProduct
 
     @classmethod
+    @override
     @connection
     async def create(cls, session: AsyncSession, **kwargs) -> OrderProduct:
         order_id = kwargs.get("order_id")

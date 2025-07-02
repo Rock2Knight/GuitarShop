@@ -15,7 +15,6 @@ async def get_order_product(id: int, response: Response):
     if isinstance(order_product_resp, dict):
         return order_product_resp
     else:
-        response.status_code = status.HTTP_404_NOT_FOUND
         return order_product_resp     # Если возникла ошибка
 
 
@@ -39,10 +38,10 @@ async def patch_order_product(id: int, order_product_dto: OrderProductDto.Update
     
 
 @order_product_router.delete("/{id}")
-async def delete_order_product(response: Response):
+async def delete_order_product(id: int, response: Response):
 
     order_product_dump = {'method': 'delete', 'id': id}
-    order_product_resp = await access_order_product(loader_class=OrderProductLoader, **order_product_dump)
+    order_product_resp = await access_order_product(**order_product_dump)
     if isinstance(order_product_resp, HTTPException):
         response.status_code = order_product_resp.status_code
     return order_product_resp     # Если возникла ошибка

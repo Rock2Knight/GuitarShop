@@ -80,14 +80,12 @@ class Guitar(Product):
 
     card_products: Mapped[list["CartProduct"]] = relationship(
         "CartProduct", 
-        backref="guitar", 
-        cascade="all, delete-orphan"
+        backref="guitar"
     )
 
     order_products: Mapped[list["OrderProduct"]] = relationship(
         "OrderProduct",
-        back_populates="guitar",
-        cascade="all, delete-orphan"
+        back_populates="guitar"
     )
 
 
@@ -101,14 +99,12 @@ class ComboAmplifier(Product):
 
     card_products: Mapped[list["CartProduct"]] = relationship(
         "CartProduct",
-        backref="combo",
-        cascade="all, delete-orphan"
+        backref="combo"
     )
 
     order_products: Mapped[list["OrderProduct"]] = relationship(
         "OrderProduct",
-        back_populates="combo",
-        cascade="all, delete-orphan"
+        back_populates="combo"
     )
 
     # Добавить характеристики комбайм амплификатора
@@ -123,14 +119,12 @@ class Processor(Product):
 
     card_products: Mapped[list["CartProduct"]] = relationship(
         "CartProduct",
-        backref="processor",
-        cascade="all, delete-orphan"
+        backref="processor"
     )
 
     order_products: Mapped[list["OrderProduct"]] = relationship(
         "OrderProduct",
-        back_populates="processor",
-        cascade="all, delete-orphan"
+        back_populates="processor"
     )
 
 
@@ -141,14 +135,12 @@ class EffectPedal(Product):
 
     card_products: Mapped[list["CartProduct"]] = relationship(
         "CartProduct",
-        backref="effect",
-        cascade="all, delete-orphan"
+        backref="effect"
     )
 
     order_products: Mapped[list["OrderProduct"]] = relationship(
         "OrderProduct",
-        back_populates="effect",
-        cascade="all, delete-orphan"
+        back_populates="effect"
     )
 
 
@@ -171,6 +163,7 @@ class User(Base):
     orders: Mapped[list["Order"]] = relationship(
         "Order", 
         back_populates="user",
+        lazy="joined",
         cascade="all, delete-orphan"
     )
 
@@ -183,9 +176,9 @@ class Cart(Base):
 
     cart_products: Mapped[list["CartProduct"]] = relationship(
         "CartProduct", 
-        back_populates="cart", 
-        cascade="all, delete-orphan",
-        lazy="joined"
+        back_populates="cart",
+        lazy="joined",
+        cascade="all, delete-orphan"
     )
 
     user: Mapped["User"] = relationship(
@@ -198,10 +191,10 @@ class CartProduct(Base):
     __tablename__ = "cart_product"
 
     cart_id: Mapped[int] = mapped_column(ForeignKey("cart.id"), nullable=False)
-    guitar_id: Mapped[int] = mapped_column(ForeignKey("guitar.id"), nullable=True)
-    combo_id: Mapped[int] = mapped_column(ForeignKey("combo_amplifier.id"), nullable=True)
-    processor_id: Mapped[int] = mapped_column(ForeignKey("processor.id"), nullable=True)
-    effect_id: Mapped[int] = mapped_column(ForeignKey("effect_pedal.id"), nullable=True)
+    guitar_id: Mapped[int] = mapped_column(ForeignKey("guitar.id", ondelete="SET NULL"), nullable=True)
+    combo_id: Mapped[int] = mapped_column(ForeignKey("combo_amplifier.id", ondelete="SET NULL"), nullable=True)
+    processor_id: Mapped[int] = mapped_column(ForeignKey("processor.id", ondelete="SET NULL"), nullable=True)
+    effect_id: Mapped[int] = mapped_column(ForeignKey("effect_pedal.id", ondelete="SET NULL"), nullable=True)
     quantity: Mapped[int] = mapped_column(nullable=False)
     
 
@@ -214,10 +207,10 @@ class CartProduct(Base):
 class OrderProduct(Base):
     __tablename__ = "order_product"
 
-    guitar_id: Mapped[int] = mapped_column(ForeignKey("guitar.id"), nullable=True)
-    combo_id: Mapped[int] = mapped_column(ForeignKey("combo_amplifier.id"), nullable=True)
-    processor_id: Mapped[int] = mapped_column(ForeignKey("processor.id"), nullable=True)
-    effect_id: Mapped[int] = mapped_column(ForeignKey("effect_pedal.id"), nullable=True)
+    guitar_id: Mapped[int] = mapped_column(ForeignKey("guitar.id", ondelete="SET NULL"), nullable=True)
+    combo_id: Mapped[int] = mapped_column(ForeignKey("combo_amplifier.id", ondelete="SET NULL"), nullable=True)
+    processor_id: Mapped[int] = mapped_column(ForeignKey("processor.id", ondelete="SET NULL"), nullable=True)
+    effect_id: Mapped[int] = mapped_column(ForeignKey("effect_pedal.id", ondelete="SET NULL"), nullable=True)
     order_id: Mapped[int] = mapped_column(ForeignKey("order.id"), nullable=False)
 
     quantity: Mapped[int] = mapped_column(nullable=False)

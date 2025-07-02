@@ -6,9 +6,11 @@ import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy.exc import InvalidRequestError
 
 from app.config import settings
 from app.database import Base
+from app.logger import logger
 from app.main import app
 
 Model = TypeVar("Model", bound=Base)
@@ -65,8 +67,12 @@ class ModelFactory:
         instance: Model
     ) -> None:
         """Удаляет созданный экземпляр."""
-        await async_session.delete(instance)
-        await async_session.commit()
+        try:
+            await async_session.delete(instance)
+            await async_session.commit()
+        except InvalidRequestError:
+            logger.error(f"Instance {instance} is already present in this session")
+            await async_session.rollback()
 
 
 @pytest_asyncio.fixture(scope="session")
