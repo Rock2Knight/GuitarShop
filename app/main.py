@@ -2,6 +2,7 @@ from fastapi import FastAPI
 import uvicorn
 
 from app.routers import *
+from app.middlewares import *
 
 app = FastAPI()
 
@@ -13,6 +14,9 @@ app.include_router(guitar_router)
 app.include_router(combo_router)
 app.include_router(processor_router)
 app.include_router(effect_router)
+
+app.add_middleware(TimingMiddleware)
+app.add_middleware(LoggingMiddleware)
 
 if __name__ == "__main__":
     uvicorn.run(
