@@ -1,0 +1,2 @@
+from app.middlewares.timing_middleware import TimingMiddleware
+from app.middlewares.logging import LoggingMiddleware
