@@ -1,0 +1,83 @@
+name: Testing of project
+
+on:
+  push:
+    branches: [ "dev2" ]
+  pull_request:
+    branches: [ "dev2", "dev" ]
+
+env:
+  DB_HOST: localhost
+  DB_PORT: 5432
+  DB_NAME: ilshat_db
+  ALEMBIC_CONFIG: app/migration/alembic.ini  # Указываем кастомный путь
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ${{ secrets.DB_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          POSTGRES_DB: ${{ env.DB_NAME }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 3
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Python install
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - run: pip install -r requirements.txt
+      
+    - name: Create or update .env file
+      run: |
+        if [ ! -f .env ]; then
+          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "DB_HOST=${{ env.DB_HOST }}" >> .env
+          echo "DB_PORT=${{ env.DB_PORT }}" >> .env
+          echo "DB_NAME=${{ env.DB_NAME }}" >> .env
+          echo ".env file created"
+        else
+          echo ".env file already exists, updating values"
+          sed -i "s/DB_USER=.*/DB_USER=${{ secrets.DB_USER }}/" .env
+          sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=${{ secrets.DB_PASSWORD }}/" .env
+          sed -i "s/DB_HOST=.*/DB_HOST=${{ env.DB_HOST_LOCAL }}/" .env
+          sed -i "s/DB_PORT=.*/DB_PORT=${{ env.DB_PORT_INTERNAL }}/" .env
+          sed -i "s/DB_NAME=.*/DB_NAME=${{ env.DB_NAME }}/" .env
+        fi
+        
+        echo "Generated .env content."
+
+    - name: Cache PostgreSQL setup
+      uses: actions/cache@v3
+      with:
+        path: |
+          /usr/lib/postgresql
+          /var/lib/postgresql
+        key: ${{ runner.os }}-postgresql-16
+
+    - name: Run migrations
+      run: |
+        cd app/migration && \
+        alembic upgrade head
+
+    - name: Verify migrations
+      run: |
+        PGPASSWORD="${{ secrests.DB_PASSWORD }}" psql -h ${{ env.DB_HOST }} -p ${{ env.DB_PORT }} -U ${{ secrets.DB_USER }} -d ${{ env.DB_NAME }} -c "\dt"
+
+    - name: Run tests
+      run: |
+        pytest -vvs
