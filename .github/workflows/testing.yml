@@ -71,9 +71,7 @@ jobs:
         key: ${{ runner.os }}-postgresql-16
 
     - name: Run migrations
-      run: |
-        cd app/migration && \
-        alembic upgrade head
+      run: alembic upgrade head
 
     - name: Verify migrations
       run: |
