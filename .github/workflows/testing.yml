@@ -88,4 +88,4 @@ jobs:
 
     - name: Run tests
       run: |
-        pytest -vvs
+        sudo pytest -vvs
