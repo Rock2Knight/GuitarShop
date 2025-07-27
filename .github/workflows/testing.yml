@@ -7,6 +7,8 @@ on:
     branches: [ "dev2", "dev" ]
 
 env:
+  DB_USER: ${{ secrets.DB_USER }}
+  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
   DB_HOST: localhost
   DB_PORT: 5432
   DB_NAME: ilshat_db
@@ -45,18 +47,18 @@ jobs:
     - name: Create or update .env file
       run: |
         if [ ! -f .env ]; then
-          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "DB_USER=${{ env.DB_USER }}" >> .env
+          echo "DB_PASSWORD=${{ env.DB_PASSWORD }}" >> .env
           echo "DB_HOST=${{ env.DB_HOST }}" >> .env
           echo "DB_PORT=${{ env.DB_PORT }}" >> .env
           echo "DB_NAME=${{ env.DB_NAME }}" >> .env
           echo ".env file created"
         else
           echo ".env file already exists, updating values"
-          sed -i "s/DB_USER=.*/DB_USER=${{ secrets.DB_USER }}/" .env
-          sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=${{ secrets.DB_PASSWORD }}/" .env
-          sed -i "s/DB_HOST=.*/DB_HOST=${{ env.DB_HOST_LOCAL }}/" .env
-          sed -i "s/DB_PORT=.*/DB_PORT=${{ env.DB_PORT_INTERNAL }}/" .env
+          sed -i "s/DB_USER=.*/DB_USER=${{ env.DB_USER }}/" .env
+          sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=${{ env.DB_PASSWORD }}/" .env
+          sed -i "s/DB_HOST=.*/DB_HOST=${{ env.DB_HOST }}/" .env
+          sed -i "s/DB_PORT=.*/DB_PORT=${{ env.DB_PORT }}/" .env
           sed -i "s/DB_NAME=.*/DB_NAME=${{ env.DB_NAME }}/" .env
         fi
         
@@ -82,7 +84,7 @@ jobs:
 
     - name: Verify migrations
       run: |
-        PGPASSWORD="${{ secrets.DB_PASSWORD }}" psql -h ${{ env.DB_HOST }} -p ${{ env.DB_PORT }} -U ${{ secrets.DB_USER }} -d ${{ env.DB_NAME }} -c "\dt"
+        PGPASSWORD="${{ env.DB_PASSWORD }}" psql -h ${{ env.DB_HOST }} -p ${{ env.DB_PORT }} -U ${{ env.DB_USER }} -d ${{ env.DB_NAME }} -c "\dt"
 
     - name: Run tests
       run: |
