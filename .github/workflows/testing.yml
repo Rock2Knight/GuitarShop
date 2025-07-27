@@ -10,6 +10,7 @@ env:
   DB_HOST: localhost
   DB_PORT: 5432
   DB_NAME: ilshat_db
+  ALEMBIC_CONFIG: ./alembic.ini  # Указываем кастомный путь
 
 jobs:
   test:
