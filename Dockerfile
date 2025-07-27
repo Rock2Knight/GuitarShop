@@ -11,7 +11,7 @@ RUN pip3 cache purge && \
     chmod +x /wait-for-it.sh
 
 COPY . .
-ENV ALEMBIC_CONFIG=/app/app/migration/alembic.ini
+ENV ALEMBIC_CONFIG=/app/alembic.ini
 ENV PYTHONPATH=/app
 
 CMD ["sh", "-c", "/wait-for-it.sh postgres:5433 -- alembic upgrade head && python3 -u ./app/main.py"]
