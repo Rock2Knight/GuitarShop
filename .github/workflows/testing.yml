@@ -10,7 +10,6 @@ env:
   DB_HOST: localhost
   DB_PORT: 5432
   DB_NAME: ilshat_db
-  ALEMBIC_CONFIG: ./alembic.ini  # Указываем кастомный путь
 
 jobs:
   test:
@@ -70,6 +69,13 @@ jobs:
           /usr/lib/postgresql
           /var/lib/postgresql
         key: ${{ runner.os }}-postgresql-16
+
+    - name: Debug project structure
+      run: |
+        echo "Текущая структура проекта:"
+        ls -la
+        echo "Содержимое alembic.ini:"
+        cat alembic.ini || echo "alembic.ini не найден"
 
     - name: Run migrations
       run: alembic upgrade head
