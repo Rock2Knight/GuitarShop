@@ -72,10 +72,24 @@ jobs:
 
     - name: Launch test database
       run: |
-        docker compose -f docker-compose.test.yml up test_postgres -d
+        docker compose -f docker-compose.test.yml up -d test_postgres
+
+    - name: Wait for PostgreSQL to be ready
+      run: |
+        for i in {1..10}; do
+          if docker compose -f docker-compose.test.yml exec test_postgres pg_isready -U ${{ env.DB_USER }} -d ${{ env.DB_NAME }}; then
+            echo "PostgreSQL is ready!"
+            break
+          fi
+          echo "Waiting for PostgreSQL... Attempt $i/10"
+          sleep 5
+        done
 
     - name: Run migrations
-      run: alembic upgrade head
+      run: |
+        # Проверяем подключение перед миграциями
+        PGPASSWORD="${{ env.DB_PASSWORD }}" psql -h ${{ env.DB_HOST }} -p ${{ env.DB_PORT }} -U ${{ env.DB_USER }} -d ${{ env.DB_NAME }} -c "SELECT 1"
+        alembic upgrade head
 
     - name: Verify migrations
       run: |
