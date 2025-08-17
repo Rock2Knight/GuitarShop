@@ -44,7 +44,7 @@ services:
     volumes:
       - .:/app                # место хранения данных под приложение
     environment:
-      - DATABASE_URL=postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}  # URL для подключения к БД
+      - DATABASE_URL=postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@test_postgres:5432/${DB_NAME}  # URL для подключения к БД
     networks:
       - guitar_shop_network      # сеть, к которой подключается приложение
     #depends_on:                 # настройки зависимостей
