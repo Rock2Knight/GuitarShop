@@ -36,7 +36,7 @@ jobs:
           echo "DB_PASSWORD=${{ env.DB_PASSWORD }}" >> .env
           echo "DB_HOST=test_postgres" >> .env
           echo "DB_PORT=5432" >> .env
-          echo "DB_NAME=${{ env.DB_NAME }}" >> .env
+          echo "DB_NAME=test_db" >> .env
           echo ".env file created"
         else
           echo ".env file already exists, updating values"
@@ -44,7 +44,7 @@ jobs:
           sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=${{ env.DB_PASSWORD }}/" .env
           sed -i "s/DB_HOST=.*/DB_HOST=test_postgres/" .env
           sed -i "s/DB_PORT=.*/DB_PORT=5432/" .env
-          sed -i "s/DB_NAME=.*/DB_NAME=${{ env.DB_NAME }}/" .env
+          sed -i "s/DB_NAME=.*/DB_NAME=test_db/" .env
         fi
         
         echo "Generated .env content."
