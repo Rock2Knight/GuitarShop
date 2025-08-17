@@ -98,4 +98,4 @@ jobs:
 
     - name: Run tests
       run: |
-        docker compose -f docker-compose.test.yml up test_backend
+        docker compose -f docker-compose.test.yml up test_backend --build --no-cache
