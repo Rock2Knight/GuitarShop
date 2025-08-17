@@ -94,6 +94,7 @@ jobs:
       run: |
         sed -i "s/DB_HOST=.*/DB_HOST=test_postgres/" .env
         sed -i "s/DB_PORT=.*/DB_PORT=5432/" .env
+        cat .env
 
     - name: Run tests
       run: |
