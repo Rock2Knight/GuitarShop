@@ -88,6 +88,11 @@ jobs:
     - name: Run migrations
       run: |
         # Проверяем подключение перед миграциями
+        sed -i "s/DB_HOST=.*/DB_HOST=localhost/" .env
+        sed -i "s/DB_PORT=.*/DB_PORT=5433/" .env
+        cat .env
+        echo ${{ env.DB_HOST }}
+        echo ${{ env.DB_PORT }}
         PGPASSWORD="${{ env.DB_PASSWORD }}" psql -h ${{ env.DB_HOST }} -p ${{ env.DB_PORT }} -U ${{ env.DB_USER }} -d ${{ env.DB_NAME }} -c "SELECT 1"
         alembic upgrade head
 
