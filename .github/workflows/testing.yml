@@ -49,16 +49,16 @@ jobs:
         if [ ! -f .env ]; then
           echo "DB_USER=${{ env.DB_USER }}" >> .env
           echo "DB_PASSWORD=${{ env.DB_PASSWORD }}" >> .env
-          echo "DB_HOST=${{ env.DB_HOST }}" >> .env
-          echo "DB_PORT=${{ env.DB_PORT }}" >> .env
+          echo "DB_HOST=localhost" >> .env
+          echo "DB_PORT=5433" >> .env
           echo "DB_NAME=${{ env.DB_NAME }}" >> .env
           echo ".env file created"
         else
           echo ".env file already exists, updating values"
           sed -i "s/DB_USER=.*/DB_USER=${{ env.DB_USER }}/" .env
           sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=${{ env.DB_PASSWORD }}/" .env
-          sed -i "s/DB_HOST=.*/DB_HOST=${{ env.DB_HOST }}/" .env
-          sed -i "s/DB_PORT=.*/DB_PORT=${{ env.DB_PORT }}/" .env
+          sed -i "s/DB_HOST=.*/DB_HOST=localhost/" .env
+          sed -i "s/DB_PORT=.*/DB_PORT=5433/" .env
           sed -i "s/DB_NAME=.*/DB_NAME=${{ env.DB_NAME }}/" .env
         fi
         
@@ -79,6 +79,10 @@ jobs:
         echo "Содержимое alembic.ini:"
         cat alembic.ini || echo "alembic.ini не найден"
 
+    - name: Launch test database
+      run: |
+        docker compose -f docker-compose.test.yml up test_postgres -d
+
     - name: Run migrations
       run: alembic upgrade head
 
@@ -86,6 +90,11 @@ jobs:
       run: |
         PGPASSWORD="${{ env.DB_PASSWORD }}" psql -h ${{ env.DB_HOST }} -p ${{ env.DB_PORT }} -U ${{ env.DB_USER }} -d ${{ env.DB_NAME }} -c "\dt"
 
+    - name: Edit host and port in .env file
+      run: |
+        sed -i "s/DB_HOST=.*/DB_HOST=test_postgres/" .env
+        sed -i "s/DB_PORT=.*/DB_PORT=5432/" .env
+
     - name: Run tests
       run: |
-        docker compose -f docker-compose.test.yml up
+        docker compose -f docker-compose.test.yml up test_backend
