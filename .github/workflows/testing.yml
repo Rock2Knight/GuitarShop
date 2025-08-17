@@ -9,9 +9,9 @@ on:
 env:
   DB_USER: ${{ secrets.DB_USER }}
   DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-  DB_HOST: localhost
+  DB_HOST: test_postgres
   DB_PORT: 5432
-  DB_NAME: ilshat_db
+  DB_NAME: test_db
 
 jobs:
   test:
@@ -86,6 +86,12 @@ jobs:
         done
 
     - name: Run migrations
+      env:
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DB_HOST: localhost
+        DB_PORT: 5433
+        DB_NAME: test_db
       run: |
         # Проверяем подключение перед миграциями
         sed -i "s/DB_HOST=.*/DB_HOST=localhost/" .env
@@ -97,6 +103,12 @@ jobs:
         alembic upgrade head
 
     - name: Verify migrations
+      env:
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DB_HOST: localhost
+        DB_PORT: 5433
+        DB_NAME: test_db
       run: |
         PGPASSWORD="${{ env.DB_PASSWORD }}" psql -h ${{ env.DB_HOST }} -p ${{ env.DB_PORT }} -U ${{ env.DB_USER }} -d ${{ env.DB_NAME }} -c "\dt"
 
