@@ -50,7 +50,7 @@ services:
     #depends_on:                 # настройки зависимостей
     #  test_postgres:                           # зависит от сервиса test_postgres
     #    condition: service_healthy
-    restart: unless-stopped
+    restart: no
     tty: true                   # Принудительно открыть интерактивный вывод
     stdin_open: true            # Открыть STDIN
 
