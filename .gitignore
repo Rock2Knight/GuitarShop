@@ -6,6 +6,7 @@
 /**/__pycache__
 /.env
 /pgdata
+/redis_data
 /logs
 /Dockerfile.test
 /.pytest_cache

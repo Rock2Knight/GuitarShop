@@ -4,6 +4,8 @@ pydantic==2.9.2
 pydantic-settings==2.5.2
 asyncpg==0.29.0
 fastapi
+fastapi-cache2
+redis
 uvicorn
 loguru==0.7.3
 httpx

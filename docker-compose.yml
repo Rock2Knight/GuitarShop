@@ -33,6 +33,21 @@ services:
     tty: true
     stdin_open: true
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis_container
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis_data:/data
+    networks:
+      - guitar_shop_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
   backend:           # сервис приложения
     build:           # настройки сборки
       context: .               
@@ -44,6 +59,7 @@ services:
       - .:/app                # место хранения данных под приложение
     environment:
       - DATABASE_URL=postgresql+psycopg2://ilshat_user:12345678@postgres:5432/ilshat_db  # URL для подключения к БД
+      - REDIS_URL=redis://redis:6379/0
     networks:
       - guitar_shop_network      # сеть, к которой подключается приложение
     #depends_on:                 # настройки зависимостей
@@ -56,6 +72,8 @@ services:
 volumes:             # настройки томов
   pgdata:            
     driver: local    # Драйвер для тома pgdata
+  redis_data:
+    driver: local
 
 networks:                # настройки сетей
   guitar_shop_network:  
