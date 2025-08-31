@@ -1,8 +1,10 @@
 from fastapi import FastAPI
+from loguru import logger
 import uvicorn
 
 from app.routers import *
 from app.middlewares import *
+from app.cache.redis import cache 
 
 app = FastAPI()
 
@@ -17,6 +19,17 @@ app.include_router(effect_router)
 
 app.add_middleware(TimingMiddleware)
 app.add_middleware(LoggingMiddleware)
+
+@app.on_event("startup")
+async def startup():
+    try:
+        redis = await cache.init_redis()
+        await redis.ping()
+        logger.info("✅ Redis connection established")
+    except Exception as e:
+        logger.error(f"❌ Redis connection error: {e}")
+        raise
+
 
 if __name__ == "__main__":
     uvicorn.run(
