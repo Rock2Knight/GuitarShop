@@ -1,11 +1,13 @@
 """Base module for testing http-methods of products"""
 from typing import Type, TypeVar, Any
+import json
 
 import pytest
 from sqlalchemy import select, delete
 
 from app.models import Product
 from app.logger import logger
+from app.cache.redis import cache
 
 ProductModel = TypeVar("ProductModel", bound=Product)
 
@@ -44,13 +46,17 @@ class BaseTestProduct:
         response_body = {k: v for k, v in response_body.items() if k not in removed_keys}
         assert response_body == test_json
         
+        # Verify data was cached
+        cache_key = f"{cls.product.__tablename__}:{expected_product.id}" # формируем ключ для Redis
         async with async_session_maker() as async_session:
             await model_factory.delete(async_session, expected_product)
+            # Clear the cache after test
+            await cache.delete(cache_key)
 
 
     @classmethod
     @pytest.mark.asyncio(scope="session")
-    async def test_create_effect(cls, client, async_session_maker, test_data):
+    async def test_create_product(cls, client, async_session_maker, test_data):
         """Testing create a product by POST-request."""
         test_json = cls.test_data["TEST_BODY"]
         async with async_session_maker() as async_session:
@@ -76,6 +82,59 @@ class BaseTestProduct:
 
         for key in (k for k in created_product.keys() if k in test_json.keys()):
             assert created_product.get(key) == test_json.get(key)
+
+
+    @classmethod
+    @pytest.mark.asyncio(scope="session")
+    async def test_get_from_cache(cls, client, model_factory, async_session_maker, clear_cache):
+        """Test getting data from Redis cache."""
+        # Create test data
+        test_json = cls.test_data["FIRST_EXPECTED"].copy()
+        description = test_json.pop("description")
+        expected_product = None
+        
+        # Здесь проверяем, содержится ли товар с таким именем в базе
+        async with async_session_maker() as async_session:
+            query = select(cls.product)
+            query = query.filter_by(name=test_json["name"])
+
+            # Получаем товар из базы
+            expected_product = await async_session.execute(query)
+            expected_product = expected_product.scalars().first()
+
+            if expected_product is None:
+                # If there are not any products in database then create it
+                expected_product = await model_factory.create(
+                    model_class=cls.product,
+                    **test_json
+                ) 
+        
+        # First request - should go to database and populate cache
+        response1 = await client.get(f"{cls.endpoint_prefix}/{expected_product.id}")
+        assert response1.status_code == 200
+        
+        # Delete from database to ensure next request comes from cache
+        async with async_session_maker() as session:
+            await model_factory.delete(session, expected_product)
+        
+        # Second request - should come from cache
+        response2 = await client.get(f"{cls.endpoint_prefix}/{expected_product.id}")
+        assert response2.status_code == 200
+        
+        # Verify cached data matches the original response
+        response1_data = response1.json()
+        response2_data = response2.json()
+        
+        # Remove dynamic fields that might change between requests
+        for data in [response1_data, response2_data]:
+            data.pop('created_at', None)
+            data.pop('updated_at', None)
+        
+        assert response1_data == response2_data, "Cached response should match original response"
+        
+        # Clean up cache
+        cache_key = f"{cls.product.__tablename__}:{expected_product.id}"
+        await cache._redis.delete(cache_key)
 
 
     @classmethod

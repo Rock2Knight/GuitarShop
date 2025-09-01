@@ -32,7 +32,7 @@ async def get_combo(
     
     if isinstance(combo_resp, dict):
         # Сохранение в кэш с проверкой
-        success = await cache.set(cache_key, guitar_resp)
+        success = await cache.set(cache_key, combo_resp)
         if not success:
             logger.error(f"Failed to cache data for key {cache_key}")
         return combo_resp

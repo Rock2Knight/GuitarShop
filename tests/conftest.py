@@ -1,13 +1,15 @@
 """ This module prepares test data """
 import json
-from typing import Type, TypeVar, Any, AsyncGenerator
+from typing import Type, TypeVar, Any, AsyncGenerator, Dict
 
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
+from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.exc import InvalidRequestError
 
+from app.cache.redis import cache
 from app.config import settings
 from app.database import Base
 from app.logger import logger
@@ -32,6 +34,23 @@ async def async_session_maker():
     engine = create_async_engine(settings.get_db_url())
     yield async_sessionmaker(engine, expire_on_commit=False)
     await engine.dispose()
+
+
+@pytest_asyncio.fixture(scope="session")
+async def redis_client() -> Redis:
+    """Fixture to get a Redis client for testing."""
+    redis = Redis.from_url(settings.redis_url)
+    yield redis
+    await redis.flushdb()
+    await redis.close()
+
+
+@pytest_asyncio.fixture(scope="session")
+async def clear_cache():
+    """Fixture to clear Redis cache before each test."""
+    await cache._redis.flushdb()
+    yield
+    await cache._redis.flushdb()
 
 
 @pytest_asyncio.fixture(scope="session")

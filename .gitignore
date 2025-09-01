@@ -11,3 +11,6 @@
 /Dockerfile.test
 /.pytest_cache
 /app/.env
+/test_pgdata
+/test_redis_data
+/*.sql
