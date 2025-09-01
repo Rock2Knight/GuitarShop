@@ -1,22 +1,41 @@
-from fastapi import APIRouter, Response, status, HTTPException
+from fastapi import APIRouter, Response, status, HTTPException, Depends
+from loguru import logger
 
+from app.cache.redis import RedisCache
 from app.access.base_access import access_model
+from app.dependencies.cache import get_cache
 from app.dto.cart_product import CartProductDto
 from app.loaders.cart_product import CartProductLoader
 
 cart_product_router = APIRouter(prefix="/cart_product", tags=["Элементы корзины"])
 
 @cart_product_router.get("/{id}")
-async def get_cart_product(id: int, response: Response):
+async def get_cart_product(
+    id: int, 
+    cache: RedisCache = Depends(get_cache)
+):
+    cache_key = f"cart_product:{id}"
+    
+    # Проверка кэша с логированием
+    cached_data = await cache.get(cache_key)
+    if cached_data:
+        logger.info(f"Cache HIT for key {cache_key}")
+        return cached_data
 
+    logger.info(f"Cache MISS for key {cache_key}")
+    
     cart_product_dump = {'method': 'get', 'id': id}
     cart_product_resp = await access_model(loader_class=CartProductLoader, **cart_product_dump)
     
     if isinstance(cart_product_resp, dict):
-        response.status_code = status.HTTP_200_OK
+        # Сохранение в кэш с проверкой
+        success = await cache.set(cache_key, cart_product_resp)
+        if not success:
+            logger.error(f"Failed to cache data for key {cache_key}")
+        #response.status_code = status.HTTP_200_OK
         return cart_product_resp
     else:
-        response.status_code = status.HTTP_404_NOT_FOUND
+        #response.status_code = status.HTTP_404_NOT_FOUND
         return cart_product_resp     # Если возникла ошибка
 
 

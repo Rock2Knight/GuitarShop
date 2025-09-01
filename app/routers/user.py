@@ -1,23 +1,42 @@
-from fastapi import APIRouter, Response, status, HTTPException
+from fastapi import APIRouter, Response, status, HTTPException, Depends
+from loguru import logger
 
+from app.cache.redis import RedisCache
 from app.access.base_access import access_model
 from app.access.user import access_user
+from app.dependencies.cache import get_cache
 from app.dto.user import UserDto
 from app.loaders.user import UserLoader
 
 user_router = APIRouter(prefix="/user", tags=["Пользователи"])
 
 @user_router.get("/{id}")
-async def get_user(id: int, response: Response):
+async def get_user(
+    id: int,
+    cache: RedisCache = Depends(get_cache)
+):
+    cache_key = f"user:{id}"
+    
+    # Проверка кэша с логированием
+    cached_data = await cache.get(cache_key)
+    if cached_data:
+        logger.info(f"Cache HIT for key {cache_key}")
+        return cached_data
+
+    logger.info(f"Cache MISS for key {cache_key}")
 
     user_dump = {'method': 'get', 'id': id}
     user_resp = await access_user(**user_dump)
     
     if isinstance(user_resp, dict):
-        response.status_code = status.HTTP_200_OK
+        # Сохранение в кэш с проверкой
+        success = await cache.set(cache_key, user_resp)
+        if not success:
+            logger.error(f"Failed to cache data for key {cache_key}")
+        #response.status_code = status.HTTP_200_OK
         return user_resp
     else:
-        response.status_code = 500
+        #response.status_code = 500
         return user_resp     # Если возникла ошибка
 
 

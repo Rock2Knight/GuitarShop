@@ -4,13 +4,14 @@ from typing import Type, TypeVar, Any
 import pytest
 from sqlalchemy import select, delete
 
-from app.models import User, Cart, ModelClass
+from app.models import User, Cart
 from app.logger import logger
+from app.cache.redis import cache
 
 @pytest.mark.asyncio(scope="session")
 async def test_get_user(client, async_session_maker, model_factory, removed_keys, test_data):
     """Testing get an user by id."""
-    test_json = test_data["FIRST_EXPECTED_USER"]
+    test_json = test_data["FIRST_EXPECTED_USER"].copy()
 
     async with async_session_maker() as async_session:
         query = delete(User)
@@ -70,6 +71,60 @@ async def test_create_user(client, async_session_maker, test_data):
 
     for key in (k for k in created_user.keys() if k in test_json.keys()):
         assert created_user.get(key) == test_json.get(key)
+
+
+@pytest.mark.user
+@pytest.mark.asyncio(scope="session")
+async def test_get_from_cache_user(client, model_factory, async_session_maker, test_data):
+    """Testing get an user by id from redis cache."""
+    test_json = test_data["FIRST_EXPECTED_USER"].copy()
+    logger.debug(f"JSON for create: \n{test_json}")
+    test_json["passhash"] = hash(test_json.pop("password"))  # Находим хэш для пароля
+    expected_user = None
+
+    async with async_session_maker() as async_session:
+        query = select(User)
+        query = query.filter_by(email=test_json["email"])
+        expected_user = await async_session.execute(query)
+        expected_user = expected_user.scalars().first()
+
+        if expected_user is None:
+            # If there are not any users in database then create it
+            expected_user = await model_factory.create(
+                model_class=User,
+                **test_json
+            ) 
+
+    # First request - should go to database and populate cache
+    response1 = await client.get(f"/user/{expected_user.id}")
+    assert response1.status_code == 200
+    
+    # Delete from database to ensure next request comes from cache
+    async with async_session_maker() as session:
+        await model_factory.delete(session, expected_user)
+        query = select(User).where(User.email == test_json["email"])
+        checked_user = await async_session.execute(query)
+        checked_user = checked_user.scalars().first()
+        assert checked_user is None
+    
+    # Second request - should come from cache
+    response2 = await client.get(f"/user/{expected_user.id}")
+    assert response2.status_code == 200
+    
+    # Verify cached data matches the original response
+    response1_data = response1.json()
+    response2_data = response2.json()
+    
+    # Remove dynamic fields that might change between requests
+    for data in [response1_data, response2_data]:
+        data.pop('created_at', None)
+        data.pop('updated_at', None)
+    
+    assert response1_data == response2_data, "Cached response should match original response"
+    
+    # Clean up cache
+    cache_key = f"user:{expected_user.id}"
+    await cache.delete(cache_key)
 
 
 @pytest.mark.user
