@@ -37,6 +37,7 @@ jobs:
           echo "DB_HOST=test_postgres" >> .env
           echo "DB_PORT=5432" >> .env
           echo "DB_NAME=test_db" >> .env
+          echo "REDIS_HOST=test_redis" >> .env
           echo ".env file created"
         else
           echo ".env file already exists, updating values"
@@ -45,6 +46,7 @@ jobs:
           sed -i "s/DB_HOST=.*/DB_HOST=test_postgres/" .env
           sed -i "s/DB_PORT=.*/DB_PORT=5432/" .env
           sed -i "s/DB_NAME=.*/DB_NAME=test_db/" .env
+          sed -i "s/REDIS_HOST=.*/REDIS_HOST=test_redis/"
         fi
         
         echo "Generated .env content."
@@ -69,10 +71,16 @@ jobs:
       run: |
         mkdir -p test_pgdata
         chmod 777 test_pgdata
+        mkdir -p test_redis_data
+        chmod 777 test_redis_data
 
     - name: Launch test database
       run: |
         docker compose -f docker-compose.test.yml up -d test_postgres
+
+    - name: Launch test redis
+      run: |
+        docker compose -f docker-compose.test.yml up -d test_redis
 
     - name: Wait for PostgreSQL to be ready
       run: |
