@@ -7,16 +7,20 @@ from sqlalchemy import select, delete
 from sqlalchemy.orm import selectinload
 
 from app.models import Guitar, User, Order, OrderProduct, ComboAmplifier
-
+from app.cache.redis import cache
 
 @pytest.mark.order_product
 @pytest.mark.asyncio(scope="session")
-async def test_get_order_product(client, async_session_maker, model_factory, removed_keys, test_data):
+async def test_get_order_product(
+    client, async_session_maker, 
+    model_factory, removed_keys, test_data
+):
     """Testing get an order product by GET-request."""
-    test_user = test_data["TEST_BODY_FOR_USER1"]
-    test_guitar = test_data["TEST_BODY_FOR_CREATED_GUITAR"]
+    test_user = test_data["TEST_BODY_FOR_USER1"].copy()             # Описание юзера
+    test_guitar = test_data["TEST_BODY_FOR_CREATED_GUITAR"].copy()  # тестовая гитара
     
     async with async_session_maker() as async_session:
+        """Удаление заказов и пользователей"""
         sel_query = select(User)
         sel_query = sel_query.options(selectinload(User.orders))
         sel_query = sel_query.filter_by(email=test_user["email"])
@@ -42,48 +46,83 @@ async def test_get_order_product(client, async_session_maker, model_factory, rem
         await async_session.execute(query)
         await async_session.commit()
 
+    """Вычисляем хэш пароля"""
     if "passhash" not in test_user.keys():
         if "password" in test_user.keys():
             test_user["passhash"] = hash(test_user.pop("password"))
         else:
             test_user["passhash"] = hash("sdfwegewbegrefr")
 
-    user = await model_factory.create(model_class=User, **test_user)
+    user = await model_factory.create(model_class=User, **test_user) # Создаем юзера
     
+    # Генерируем срок доставки заказа
     time_offset = randint(7, 30)
     order_datetime = datetime.now().astimezone() + timedelta(days=time_offset)
     order_date = date(order_datetime.year, order_datetime.month, order_datetime.day)
 
     order_data = {"user_id": user.id, "order_date": order_date, "status": "New"}
-    user.order = await model_factory.create(model_class=Order, **order_data)
+    user.order = await model_factory.create(model_class=Order, **order_data)  # Создаем заказ
 
-    guitar = await model_factory.create(model_class=Guitar, **test_guitar)
+    guitar = await model_factory.create(model_class=Guitar, **test_guitar)  # Создаем гитару
 
+    # Данные для товара из заказа
     order_product_data = {
         "order_id": user.order.id,
         "guitar_id": guitar.id,
         "quantity": guitar.quantity // 2   
     }
 
+    # Добавляем товар из заказа в базу
     order_product = await model_factory.create(model_class=OrderProduct, **order_product_data)
     order_product_id = order_product.id
 
-    response = await client.get(f"/order_product/{order_product_id}")
-    response_body = response.json()
-    assert response.status_code in (200, 201)
+    # Получаем товар из заказа с помощью GET-запроса к API
+    response1 = await client.get(f"/order_product/{order_product_id}")
+    assert response1.status_code in (200, 201)
+    response_body1 = response1.json()
 
-    response_body = {k: v for k, v in response_body.items() if k not in removed_keys}
+    response_body1 = {k: v for k, v in response_body1.items() if k not in removed_keys}
     
-    for key in (k for k in order_product_data.keys() if k in response_body.keys()):
-        assert response_body[key] == order_product_data[key]
+    for key in (k for k in order_product_data.keys() if k in response_body1.keys()):
+        assert response_body1[key] == order_product_data[key]
     
     async with async_session_maker() as async_session:
-        await model_factory.delete(async_session, user)
+        await model_factory.delete(async_session, order_product)
+        query_sel = select(OrderProduct).where(OrderProduct.id == order_product_id)
+        result = await async_session.execute(query_sel)
+        result = result.scalars().first()
+        assert result is None
+
+    # Снова делаем GET-запрос к API. В данном случае приложение должно достать данные из Redis
+    response2 = await client.get(f"/order_product/{order_product_id}")
+    assert response2.status_code in (200, 201)
+    response_body2 = response2.json()
+
+    # Remove dynamic fields that might change between requests
+    for data in [response_body1, response_body2]:
+        data.pop('id', None)
+        data.pop('created_at', None)
+        data.pop('updated_at', None)
+    
+    # Проверяем, что данные из базы совпадают с данными из кэша
+    assert response_body1 == response_body2, "Cached response should match original response"
+    
+    # Clean up cache
+    cache_key = f"order_product:{order_product_id}"
+    await cache.delete(cache_key)
+
+    async with async_session_maker() as session:
+        await session.delete(user)
+        await session.delete(guitar)
+        await session.commit()
 
 
 @pytest.mark.order_product
 @pytest.mark.asyncio(scope="session")
-async def test_post_order_product(client, async_session_maker, model_factory, removed_keys, test_data):
+async def test_post_order_product(
+    client, async_session_maker, 
+    model_factory, removed_keys, test_data
+):
     """Testing post an order product by POST-request."""
     test_user = test_data["TEST_BODY_FOR_USER1"]
     test_guitar = test_data["TEST_BODY_FOR_CREATED_GUITAR"]
@@ -159,9 +198,13 @@ async def test_post_order_product(client, async_session_maker, model_factory, re
         assert created_op.get(key) == order_product_data.get(key)
 
 
+
 @pytest.mark.order_product
 @pytest.mark.asyncio(scope="session")
-async def test_update_order_product(client, async_session_maker, model_factory, removed_keys, test_data):
+async def test_update_order_product(
+    client, async_session_maker, 
+    model_factory, removed_keys, test_data
+):
     """Testing update an order product by PATCH-request."""
     test_user = test_data["TEST_BODY_FOR_USER2"]
     test_guitar = test_data["TEST_BODY_FOR_CREATED_GUITAR"]
@@ -253,7 +296,10 @@ async def test_update_order_product(client, async_session_maker, model_factory, 
 
 @pytest.mark.order_product
 @pytest.mark.asyncio(scope="session")
-async def test_delete_order_product(client, model_factory, async_session_maker, test_data):
+async def test_delete_order_product(
+    client, model_factory, 
+    async_session_maker, test_data
+):
     """Testing deleting of an order product by DELETE-request."""
     
     test_json_user_create = test_data["TEST_BODY_FOR_USER1"]        # для создания юзера
