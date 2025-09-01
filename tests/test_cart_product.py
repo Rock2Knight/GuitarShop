@@ -7,6 +7,7 @@ from sqlalchemy import select, delete
 
 from app.models import User, Guitar, ComboAmplifier, Cart, CartProduct, ModelClass
 from app.logger import logger
+from app.cache.redis import cache
 
 
 @pytest.mark.cart_product
@@ -54,21 +55,38 @@ async def test_get_cart_product(client, async_session_maker, model_factory, remo
         )
         logger.debug(f"Created cart product: {new_cp}")
 
-    response = await client.get(f"/cart_product/{new_cp.id}")
-    response_body = response.json()
+    response1 = await client.get(f"/cart_product/{new_cp.id}")
     #logger.debug(f"Response body::{cls.product}: {response_body}")
-    assert response.status_code in (200, 201)
+    assert response1.status_code in (200, 201)
+    response_body1 = response1.json()
 
     test_json_cart_product["combo_id"] = None
     test_json_cart_product["processor_id"] = None
     test_json_cart_product["effect_id"] = None
 
-    response_body = {k: v for k, v in response_body.items() if k not in removed_keys}
-    assert response_body == test_json_cart_product
+    response_body1 = {k: v for k, v in response_body1.items() if k not in removed_keys}
+    assert response_body1 == test_json_cart_product
+    new_cp_id = new_cp.id
 
     async with async_session_maker() as async_session:
-        await model_factory.delete(async_session, guitar)
-        await model_factory.delete(async_session, new_cp)
+        await async_session.delete(new_cp)
+        await async_session.commit()
+        await async_session.delete(guitar)
+        await async_session.commit()
+        check_query = select(CartProduct).where(CartProduct.id == new_cp_id)
+        check_result = await async_session.execute(check_query)
+        check_result = check_result.scalars().first()
+        assert check_result is None
+
+    response2 = await client.get(f"/cart_product/{new_cp_id}")
+    assert response2.status_code in (200, 201)
+    response_body2 = response2.json()
+    response_body2 = {k: v for k, v in response_body2.items() if k not in removed_keys}
+    assert response_body2 == response_body1
+
+    # Clean up cache
+    cache_key = f"cart_product:{new_cp_id}"
+    await cache.delete(cache_key)
 
 
 @pytest.mark.cart_product
