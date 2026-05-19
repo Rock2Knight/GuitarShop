@@ -15,7 +15,7 @@ services:
     volumes:
       - ./pgdata:/var/lib/postgresql/data/pgdata  # каталог, в котором хранятся данные
     networks:
-    - guitar_shop_network          # К какой сети подсоединяется
+      - guitar_shop_network          # К какой сети подсоединяется
     command: >                     # команда для запуска БД в докере
       postgres -c max_connections=1000
                -c shared_buffers=256MB

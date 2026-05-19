@@ -1,3 +1,4 @@
+from app.routers.auth import auth_router
 from app.routers.user import user_router
 from app.routers.guitar import guitar_router
 from app.routers.order import order_router

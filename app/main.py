@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from fastapi import FastAPI
 from loguru import logger
 import uvicorn
@@ -8,6 +10,7 @@ from app.cache.redis import cache
 
 app = FastAPI()
 
+app.include_router(auth_router)
 app.include_router(user_router)
 app.include_router(order_router)
 app.include_router(order_product_router)
@@ -32,6 +35,7 @@ async def startup():
 
 
 if __name__ == "__main__":
+    logger.info(f"FILEPATH: {Path(__file__).parent.parent}")
     uvicorn.run(
         "main:app",
         host="0.0.0.0",

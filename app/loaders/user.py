@@ -1,4 +1,5 @@
 from typing import override
+from hashlib import sha3_512
 
 from sqlalchemy import select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -15,10 +16,12 @@ class UserLoader(ModelLoader[User]):
     @override
     @connection
     async def create(cls, session: AsyncSession, **kwargs) -> User:
-        passhash = hash(kwargs['password'])  # Находим хэш для пароля
+        if "passhash" not in kwargs.keys() and "password" not in kwargs.keys():
+            kwargs["passhash"] = sha3_512(kwargs.get("password").encode("utf-8")).hexdigest()
+
         user = User(
             email=kwargs['email'],
-            passhash=passhash,
+            passhash=kwargs['passhash'],
             username=kwargs['username'],
             cart=Cart()
         )

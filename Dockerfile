@@ -6,12 +6,10 @@ COPY requirements.txt .
 RUN pip3 cache purge && \
     pip3 install --upgrade pip && \
     pip3 install --no-cache-dir -r requirements.txt && \
-    apk add --no-cache bash && \
-    wget -O /wait-for-it.sh https://github.com/vishnubob/wait-for-it/raw/master/wait-for-it.sh && \
-    chmod +x /wait-for-it.sh
+    apk add --no-cache bash
 
 COPY . .
 ENV ALEMBIC_CONFIG=/app/alembic.ini
 ENV PYTHONPATH=/app
 
-CMD ["sh", "-c", "/wait-for-it.sh postgres:5433 -- alembic upgrade head && python3 -u ./app/main.py"]
+CMD sh -c "alembic upgrade head && python3 -u ./app/main.py"
