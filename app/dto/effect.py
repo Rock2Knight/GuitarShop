@@ -9,5 +9,11 @@ class EffectPedalDto(ProductDto):
     class Create(ProductDto.Create):
         effect: str
 
+        class Config:
+            title = "EffectPedalCreate"
+
     class Update(ProductDto.Update):
         effect: str | None = None
+
+        class Config:
+            title = "EffectPedalUpdate"

@@ -25,6 +25,9 @@ class OrderProductDto:
                 raise ValueError('Должен быть указан ровно один ID товара (гитара, комбо, процессор или эффект)')
             return self
 
+        class Config:
+            title = "OrderProductCreate"
+
 
     class Update(BaseModel):
         order_id: conint(gt=0) | None = None
@@ -46,3 +49,6 @@ class OrderProductDto:
             if provided_ids != 1:
                 raise ValueError('Должен быть указан ровно один ID товара (гитара, комбо, процессор или эффект)')
             return self
+        
+        class Config:
+            title = "OrderProductUpdate"

@@ -18,3 +18,6 @@ class OrderDto(BaseModel):
             raise ValueError("Не указано не одно поле в запросе!")
         
         return self
+    
+    class Config:
+        title = "OrderCreate"

@@ -12,6 +12,9 @@ class CartProductDto:
         effect_id: conint(gt=0) | None = None
         quantity: conint(gt=0)
 
+        class Config:
+            title = "CartProductCreate"
+
         @model_validator(mode='after')
         def validate_single_product(self) -> Self:
             provided_ids = sum(1 for field in [
@@ -33,6 +36,9 @@ class CartProductDto:
         processor_id: conint(gt=0) | None = None
         effect_id: conint(gt=0) | None = None
         quantity: conint(gt=0) | None = None
+
+        class Config:
+            title = "CartProductUpdate"
 
         @model_validator(mode='after')
         def validate_single_product(self) -> Self:

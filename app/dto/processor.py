@@ -11,7 +11,13 @@ class ProcessorDto(ProductDto):
         instrument_type: str
         screen_type: str
 
+        class Config:
+            title = "ProcessorCreate"
+
     class Update(ProductDto.Update):
         express_pedal: bool | None = None
         instrument_type: str | None = None
         screen_type: str | None = None
+
+        class Config:
+            title = "ProcessorUpdate"

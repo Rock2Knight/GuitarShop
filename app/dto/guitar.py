@@ -14,6 +14,9 @@ class GuitarDto:
         fingerboard_material: str
         body_material: str
 
+        class Config:
+            title = "GuitarCreate"
+
         @model_validator(mode='after')
         def validate_guitar(self) -> Self:
 
@@ -47,6 +50,9 @@ class GuitarDto:
         recorder_config: constr(max_length=10) | None = None
         fingerboard_material: str | None = None
         body_material: str | None = None
+
+        class Config:
+            title = "GuitarUpdate"
 
         @model_validator(mode='after')
         def validate_guitar(self) -> Self:

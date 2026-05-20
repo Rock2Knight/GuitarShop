@@ -12,6 +12,9 @@ class ComboAmpfDto(ProductDto):
         channels_count: conint(gt=0)
         power: confloat(gt=0)
 
+        class Config:
+            title = "ComboAmpfCreate"
+
         @model_validator(mode="after")
         def validate_combo_ampf(self) -> Self:
             if not isinstance(self.effects, str):
@@ -27,6 +30,9 @@ class ComboAmpfDto(ProductDto):
         effects: str | None = None
         channels_count: conint(gt=0) | None = None
         power: confloat(gt=0) | None = None
+
+        class Config:
+            title = "ComboAmpfUpdate"
 
         @model_validator(mode="after")
         def validate_combo_ampf(self) -> Self:
