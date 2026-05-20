@@ -3,6 +3,7 @@ from loguru import logger
 
 from app.cache.redis import RedisCache
 from app.access.base_access import access_model
+from app.auth_service.auth import get_current_user
 from app.dependencies.cache import get_cache
 from app.dto.guitar import GuitarDto
 from app.loaders.guitar import GuitarLoader
@@ -12,7 +13,8 @@ guitar_router = APIRouter(prefix="/guitar", tags=["Гитары"])
 @guitar_router.get("/{id}")
 async def get_guitar(
     id: int,
-    cache: RedisCache = Depends(get_cache)
+    cache: RedisCache = Depends(get_cache),
+    user_id = Depends(get_current_user)
 ):
     cache_key = f"guitar:{id}"
     
@@ -42,7 +44,10 @@ async def get_guitar(
 
 
 @guitar_router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_guitar(guitar_dto: GuitarDto.Create):
+async def create_guitar(
+    guitar_dto: GuitarDto.Create,
+    user_id = Depends(get_current_user)
+):
 
     guitar_dump = {'method': 'post', 'dto': guitar_dto.model_dump()}
     return await access_model(
@@ -56,7 +61,8 @@ async def patch_guitar(
     id: int, 
     guitar_dto: GuitarDto.Update, 
     response: Response,
-    cache: RedisCache = Depends(get_cache)
+    cache: RedisCache = Depends(get_cache),
+    user_id = Depends(get_current_user)
 ):
     await cache.delete(f"guitar:{id}")
 
@@ -73,7 +79,10 @@ async def patch_guitar(
     
 
 @guitar_router.delete("/{id}")
-async def delete_guitar(id: int, response: Response):
+async def delete_guitar(
+    id: int, response: Response,
+    user_id = Depends(get_current_user)
+):
 
     guitar_dump = {'method': 'delete', 'id': id}
     guitar_resp = await access_model(

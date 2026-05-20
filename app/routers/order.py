@@ -3,6 +3,7 @@ from loguru import logger
 
 from app.cache.redis import RedisCache
 from app.access.order import access_order
+from app.auth_service.auth import get_current_user
 from app.dependencies.cache import get_cache
 from app.dto.order import OrderDto
 from app.loaders.order import OrderLoader
@@ -12,7 +13,8 @@ order_router = APIRouter(prefix="/order", tags=["Заказы"])
 @order_router.get("/{id}")
 async def get_order(
     id: int, 
-    cache: RedisCache = Depends(get_cache)
+    cache: RedisCache = Depends(get_cache),
+    user_id = Depends(get_current_user)
 ):
     cache_key = f"order:{id}"
     
@@ -40,14 +42,18 @@ async def get_order(
 
 
 @order_router.post("/{user_id}", status_code=status.HTTP_201_CREATED)
-async def create_order(user_id: int):
+async def create_order(user_id: int, auth_user_id = Depends(get_current_user)):
 
     order_dump = {'method': 'post', 'user_id': user_id}
     return await access_order(**order_dump)
 
 
 @order_router.patch("/{id}")
-async def patch_order(id: int, order_dto: OrderDto, response: Response):
+async def patch_order(
+    id: int, order_dto: OrderDto, 
+    response: Response, 
+    user_id = Depends(get_current_user)
+):
 
     order_dump = {'method': 'patch', 'id': id, 'dto': order_dto.model_dump()}
     order_resp = await access_order(**order_dump)
@@ -59,7 +65,10 @@ async def patch_order(id: int, order_dto: OrderDto, response: Response):
     
 
 @order_router.delete("/{id}")
-async def delete_order(id: int, response: Response):
+async def delete_order(
+    id: int, response: Response,
+    user_id = Depends(get_current_user)
+):
 
     order_dump = {'method': 'delete', 'id': id}
     order_resp = await access_order(**order_dump)

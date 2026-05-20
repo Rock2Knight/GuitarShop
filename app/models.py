@@ -149,7 +149,7 @@ class User(Base):
     __tablename__ = "user"
 
     email: Mapped[uniq_str_an]
-    passhash: Mapped[int] = mapped_column(BigInteger, nullable=False, unique=True)
+    passhash: Mapped[uniq_str_an]
     username: Mapped[uniq_str_an]
 
     cart: Mapped["Cart"] = relationship(

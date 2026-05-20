@@ -3,6 +3,7 @@ from loguru import logger
 
 from app.cache.redis import RedisCache
 from app.access.base_access import access_model
+from app.auth_service.auth import get_current_user
 from app.dependencies.cache import get_cache
 from app.dto.processor import ProcessorDto
 from app.loaders.processor import ProcessorLoader
@@ -12,7 +13,8 @@ processor_router = APIRouter(prefix="/processor", tags=["Гитарные про
 @processor_router.get("/{id}")
 async def get_processor(
     id: int, 
-    cache: RedisCache = Depends(get_cache)
+    cache: RedisCache = Depends(get_cache),
+    user_id = Depends(get_current_user)
 ):
     cache_key = f"processor:{id}"
 
@@ -42,7 +44,10 @@ async def get_processor(
 
 
 @processor_router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_processor(processor_dto: ProcessorDto.Create):
+async def create_processor(
+    processor_dto: ProcessorDto.Create,
+    user_id = Depends(get_current_user)
+):
 
     processor_dump = {'method': 'post', 'dto': processor_dto.model_dump()}
     return await access_model(
@@ -52,7 +57,11 @@ async def create_processor(processor_dto: ProcessorDto.Create):
 
 
 @processor_router.patch("/{id}")
-async def patch_processor(id: int, processor_dto: ProcessorDto.Update, response: Response):
+async def patch_processor(
+    id: int, processor_dto: ProcessorDto.Update, 
+    response: Response,
+    user_id = Depends(get_current_user)
+):
 
     processor_dump = {'method': 'patch', 'id': id, 'dto': processor_dto.model_dump()}
     processor_resp = await access_model(
@@ -67,7 +76,10 @@ async def patch_processor(id: int, processor_dto: ProcessorDto.Update, response:
     
 
 @processor_router.delete("/{id}")
-async def delete_processor(id: int, response: Response):
+async def delete_processor(
+    id: int, response: Response,
+    user_id = Depends(get_current_user)
+):
 
     processor_dump = {'method': 'delete', 'id': id}
     processor_resp = await access_model(

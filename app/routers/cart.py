@@ -2,6 +2,7 @@ from fastapi import APIRouter, Response, status, HTTPException, Depends
 from loguru import logger
 
 from app.cache.redis import RedisCache
+from app.auth_service.auth import get_current_user
 from app.access.base_access import access_model
 from app.dependencies.cache import get_cache
 from app.dto.cart_product import CartProductDto
@@ -12,7 +13,8 @@ cart_product_router = APIRouter(prefix="/cart_product", tags=["Элементы 
 @cart_product_router.get("/{id}")
 async def get_cart_product(
     id: int, 
-    cache: RedisCache = Depends(get_cache)
+    cache: RedisCache = Depends(get_cache),
+    user_id = Depends(get_current_user)
 ):
     cache_key = f"cart_product:{id}"
     
@@ -40,14 +42,20 @@ async def get_cart_product(
 
 
 @cart_product_router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_cart_product(cart_product_dto: CartProductDto.Create):
+async def create_cart_product(
+    cart_product_dto: CartProductDto.Create, 
+    user_id = Depends(get_current_user)
+):
 
     cart_product_dump = {'method': 'post', 'dto': cart_product_dto.model_dump()}
     return await access_model(loader_class=CartProductLoader, **cart_product_dump)
 
 
 @cart_product_router.patch("/{id}")
-async def patch_cart_product(id: int, cart_product_dto: CartProductDto.Update, response: Response):
+async def patch_cart_product(
+    id: int, cart_product_dto: CartProductDto.Update, 
+    response: Response, user_id = Depends(get_current_user)
+):
 
     cart_product_dump = {'method': 'patch', 'id': id, 'dto': cart_product_dto.model_dump()}
     cart_product_resp = await access_model(loader_class=CartProductLoader, **cart_product_dump)
@@ -59,7 +67,10 @@ async def patch_cart_product(id: int, cart_product_dto: CartProductDto.Update, r
     
 
 @cart_product_router.delete("/{id}")
-async def delete_cart_product(id: int, response: Response):
+async def delete_cart_product(
+    id: int, response: Response, 
+    user_id = Depends(get_current_user)
+):
 
     cart_product_dump = {'method': 'delete', 'id': id}
     cart_product_resp = await access_model(loader_class=CartProductLoader, **cart_product_dump)

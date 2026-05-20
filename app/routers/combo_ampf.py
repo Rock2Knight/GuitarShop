@@ -3,6 +3,7 @@ from loguru import logger
 
 from app.cache.redis import RedisCache
 from app.access.base_access import access_model
+from app.auth_service.auth import get_current_user
 from app.dependencies.cache import get_cache
 from app.dto.combo_ampf import ComboAmpfDto
 from app.loaders.combo_ampf import ComboAmpfLoader
@@ -12,7 +13,8 @@ combo_router = APIRouter(prefix="/combo_ampf", tags=["Комбо-усилите�
 @combo_router.get("/{id}")
 async def get_combo(
     id: int, 
-    cache: RedisCache = Depends(get_cache)
+    cache: RedisCache = Depends(get_cache),
+    user_id = Depends(get_current_user)
 ):
     cache_key = f"combo_ampf:{id}"
 
@@ -42,7 +44,10 @@ async def get_combo(
 
 
 @combo_router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_combo(combo_dto: ComboAmpfDto.Create):
+async def create_combo(
+    combo_dto: ComboAmpfDto.Create, 
+    user_id = Depends(get_current_user)
+):
 
     combo_dump = {'method': 'post', 'dto': combo_dto.model_dump()}
     return await access_model(
@@ -56,7 +61,8 @@ async def patch_combo(
     id: int, 
     combo_dto: ComboAmpfDto.Update, 
     response: Response,
-    cache: RedisCache = Depends(get_cache)
+    cache: RedisCache = Depends(get_cache),
+    user_id = Depends(get_current_user)
 ):
     await cache.delete(f"combo_ampf:{id}")
 
@@ -73,7 +79,10 @@ async def patch_combo(
     
 
 @combo_router.delete("/{id}")
-async def delete_combo(id: int, response: Response):
+async def delete_combo(
+    id: int, response: Response,
+    user_id = Depends(get_current_user)
+):
 
     combo_dump = {'method': 'delete', 'id': id}
     combo_resp = await access_model(
