@@ -4,7 +4,7 @@
 /__pycache__ */
 /__pycache__
 /**/__pycache__
-/.env
+/**/.env*
 /pgdata
 /redis_data
 /logs

@@ -6,9 +6,9 @@ services:
     image: postgres:16                               # образ для постгреса 
     container_name: postgres_container               # имя контейнера
     environment:                                     # переменные окружения postgres
-      POSTGRES_USER: ilshat_user
-      POSTGRES_PASSWORD: 12345678
-      POSTGRES_DB: ilshat_db
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "5433:5432"                # По какому порту подключаться к postgres
@@ -57,8 +57,10 @@ services:
       - "8000:8000"              # порты
     volumes:
       - .:/app                # место хранения данных под приложение
+    env_file:
+      - ./app/.env.app
     environment:
-      - DATABASE_URL=postgresql+psycopg2://ilshat_user:12345678@postgres:5432/ilshat_db  # URL для подключения к БД
+      - DATABASE_URL=postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}  # URL для подключения к БД
       - REDIS_URL=redis://redis:6379/0
     networks:
       - guitar_shop_network      # сеть, к которой подключается приложение

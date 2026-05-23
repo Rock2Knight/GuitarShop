@@ -19,9 +19,8 @@ class Settings(BaseSettings):
     REDIS_PASSWORD: str = ""
     CACHE_TTL: int = 3600  # Время хранения кэша - 1 час
     
-    # DATABASE_SQLITE = 'sqlite+aiosqlite:///data/db.sqlite3'
     model_config = SettingsConfigDict(
-        env_file=Path(__file__).parent / ".env"
+        env_file=Path(__file__).parent / ".env.app"
     )
 
     def get_db_url(self):
