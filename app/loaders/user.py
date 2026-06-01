@@ -16,7 +16,7 @@ class UserLoader(ModelLoader[User]):
     @override
     @connection
     async def create(cls, session: AsyncSession, **kwargs) -> User:
-        if "passhash" not in kwargs.keys() and "password" not in kwargs.keys():
+        if "passhash" not in kwargs.keys() and "password" in kwargs.keys():
             kwargs["passhash"] = sha3_512(kwargs.get("password").encode("utf-8")).hexdigest()
 
         user = User(

@@ -2,52 +2,17 @@ import enum
 from datetime import date
 from typing import TypeVar
 
-from sqlalchemy import ForeignKey, Date, CheckConstraint, BigInteger
+from sqlalchemy import (
+    Table, Column, Integer,
+    ForeignKey, Date, CheckConstraint,
+    BigInteger, Numeric, String
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.ext.asyncio import AsyncAttrs
 
 from app.database import Base, str_an, uniq_str_an
 
 ModelClass = TypeVar('ModelClass', bound=Base)  # Generic тип для модели
-
-
-class ProductType(str, enum.Enum):
-    GUITAR = "Guitar"
-    COMBO_AMPLIFIER = "Combo Amplifier"
-    PROCCESSOR = "Processor"
-    EFFECT_PEDAL = "Effect Pedal"
-
-
-class GuitarType(str, enum.Enum):
-    ACOUSTIC = "Acoustic"
-    ELECTRIC = "Electric"
-    BASS = "Bass"
-    BARITONE = "Baritone"
-
-
-class GuitarShape(str, enum.Enum):
-    CLASSIC = "Classic"
-    LES_PAUL = "Les Paul"
-    STRATOCASTER = "Stratocaster"
-    TELECASTER = "Telecaster"
-    SUPERSTRAT = "SuperStrat"
-    EXPLORER = "Explorer"
-    SG = "SG"
-    PRS = "PRS"
-    FLYING_V = "Flying V"
-    MOCKINGBIRD = "Mocking Bird"
-    WARLOCK = "Warlock"
-    RR = "RR"
-    STAR = "Star"
-    ICEMAN = "Ice Man"
-    FIREBIRD = "FireBird"
-    JAGUAR = "Jaguar"
-    MUSTANG = "Mustang"
-    JAG_STANG = "Jag-Stang"
-
-
-class ComboAmplifierType(str, enum.Enum):
-    BULB = "Bulb"
-    TRANSISTOR = "Transistor"
 
 
 class OrderStatus(str, enum.Enum):
@@ -55,93 +20,6 @@ class OrderStatus(str, enum.Enum):
     IN_PROGRESS = "In Progress"
     COMPLETED = "Completed"
     CANCELED = "Canceled"
-
-
-class Product(Base):
-    __tablename__ = "product"
-    __abstract__ = True
-
-    product_type: Mapped[ProductType] = mapped_column(nullable=False)
-    name: Mapped[str] = mapped_column(nullable=False, unique=True)
-    description: Mapped[str_an] = mapped_column(nullable=True)
-    quantity: Mapped[int] = mapped_column(CheckConstraint('quantity >= 0', name='quantity_check'), nullable=False)
-    price: Mapped[float] = mapped_column(CheckConstraint('price >= 0', name='price_check'), nullable=False)
-
-
-class Guitar(Product):
-    __tablename__ = "guitar"
-
-    guitar_type: Mapped[GuitarType] = mapped_column(nullable=False)
-    shape: Mapped[GuitarShape] = mapped_column(nullable=True)
-    fret_count: Mapped[int] = mapped_column(CheckConstraint('fret_count > 0', name='fret_count_check'), nullable=False)
-    recorder_config: Mapped[str] = mapped_column(nullable=True)
-    fingerboard_material: Mapped[str_an]
-    body_material: Mapped[str_an]
-
-    card_products: Mapped[list["CartProduct"]] = relationship(
-        "CartProduct", 
-        backref="guitar"
-    )
-
-    order_products: Mapped[list["OrderProduct"]] = relationship(
-        "OrderProduct",
-        back_populates="guitar"
-    )
-
-
-class ComboAmplifier(Product):
-    __tablename__ = "combo_amplifier"
-
-    combo_type: Mapped[ComboAmplifierType] = mapped_column(nullable=False)
-    effects: Mapped[str_an]
-    channels_count: Mapped[int] = mapped_column(CheckConstraint('channels_count >= 0', name='channels_count_check'), nullable=False)
-    power: Mapped[float] = mapped_column(nullable=True)
-
-    card_products: Mapped[list["CartProduct"]] = relationship(
-        "CartProduct",
-        backref="combo"
-    )
-
-    order_products: Mapped[list["OrderProduct"]] = relationship(
-        "OrderProduct",
-        back_populates="combo"
-    )
-
-    # Добавить характеристики комбайм амплификатора
-
-
-class Processor(Product):
-    __tablename__ = "processor"
-
-    express_pedal: Mapped[bool] = mapped_column(nullable=False)
-    instrument_type: Mapped[str_an]
-    screen_type: Mapped[str_an]
-
-    card_products: Mapped[list["CartProduct"]] = relationship(
-        "CartProduct",
-        backref="processor"
-    )
-
-    order_products: Mapped[list["OrderProduct"]] = relationship(
-        "OrderProduct",
-        back_populates="processor"
-    )
-
-
-class EffectPedal(Product):
-    __tablename__ = "effect_pedal"
-
-    effect : Mapped[str_an]
-
-    card_products: Mapped[list["CartProduct"]] = relationship(
-        "CartProduct",
-        backref="effect"
-    )
-
-    order_products: Mapped[list["OrderProduct"]] = relationship(
-        "OrderProduct",
-        back_populates="effect"
-    )
 
 
 class User(Base):
@@ -164,8 +42,56 @@ class User(Base):
         "Order", 
         back_populates="user",
         lazy="joined",
+        cascade="save-update"
+    )
+
+
+class Product(Base):
+    __tablename__ = "product"
+
+    name: Mapped[str] = mapped_column(nullable=False, unique=True)
+    quantity: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    price: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
+
+    cart_products: Mapped[list["CartProduct"]] = relationship(
+        "CartProduct", 
+        back_populates="product", 
         cascade="all, delete-orphan"
     )
+    order_products: Mapped[list["OrderProduct"]] = relationship(
+        "OrderProduct", 
+        back_populates="product", 
+        cascade="all, delete-orphan"
+    )
+
+
+class Category(Base):
+    __tablename__ = "category"
+
+    parent_id: Mapped[int | None] = mapped_column(ForeignKey("category.id"), nullable=True)
+    name: Mapped[str] = mapped_column(nullable=False, unique=True)
+
+    parent: Mapped["Category | None"] = relationship("Category", remote_side=[id], back_populates="children")
+    children: Mapped[list["Category"]] = relationship("Category", back_populates="parent", cascade="all, delete-orphan")
+    attributes: Mapped[list["Attributes"]] = relationship("Attributes", back_populates="category", cascade="all, delete-orphan")
+
+
+class Attributes(Base):
+    __tablename__ = "attributes"
+
+    category_id: Mapped[int] = mapped_column(ForeignKey("category.id"), nullable=False)
+    name: Mapped[str] = mapped_column(nullable=False, unique=True)
+
+    category: Mapped["Category"] = relationship("Category", back_populates="attributes")
+
+
+product_attr_values = Table(
+    "product_attribute_values",
+    Base.metadata,
+    Column('product_id', Integer, ForeignKey('product.id', ondelete='CASCADE'), primary_key=True),
+    Column('attribute_id', Integer, ForeignKey('attributes.id', ondelete='CASCADE'), primary_key=True),
+    Column('value', String, nullable=False)
+)
 
 
 class Cart(Base):
@@ -179,65 +105,6 @@ class Cart(Base):
         back_populates="cart",
         lazy="joined",
         cascade="all, delete-orphan"
-    )
-
-    user: Mapped["User"] = relationship(
-        "User",
-        back_populates="cart"
-    )
-
-
-class CartProduct(Base):
-    __tablename__ = "cart_product"
-
-    cart_id: Mapped[int] = mapped_column(ForeignKey("cart.id"), nullable=False)
-    guitar_id: Mapped[int] = mapped_column(ForeignKey("guitar.id", ondelete="SET NULL"), nullable=True)
-    combo_id: Mapped[int] = mapped_column(ForeignKey("combo_amplifier.id", ondelete="SET NULL"), nullable=True)
-    processor_id: Mapped[int] = mapped_column(ForeignKey("processor.id", ondelete="SET NULL"), nullable=True)
-    effect_id: Mapped[int] = mapped_column(ForeignKey("effect_pedal.id", ondelete="SET NULL"), nullable=True)
-    quantity: Mapped[int] = mapped_column(nullable=False)
-    
-
-    cart: Mapped["Cart"] = relationship(
-        "Cart", 
-        back_populates="cart_products"
-    )
-
-
-class OrderProduct(Base):
-    __tablename__ = "order_product"
-
-    guitar_id: Mapped[int] = mapped_column(ForeignKey("guitar.id", ondelete="SET NULL"), nullable=True)
-    combo_id: Mapped[int] = mapped_column(ForeignKey("combo_amplifier.id", ondelete="SET NULL"), nullable=True)
-    processor_id: Mapped[int] = mapped_column(ForeignKey("processor.id", ondelete="SET NULL"), nullable=True)
-    effect_id: Mapped[int] = mapped_column(ForeignKey("effect_pedal.id", ondelete="SET NULL"), nullable=True)
-    order_id: Mapped[int] = mapped_column(ForeignKey("order.id"), nullable=False)
-
-    quantity: Mapped[int] = mapped_column(nullable=False)
-
-    order: Mapped["Order"] = relationship(
-        "Order", 
-        back_populates="order_products"
-    )
-
-    guitar: Mapped[Guitar] = relationship(
-        "Guitar",
-        back_populates="order_products"
-    )
-
-    combo: Mapped[ComboAmplifier] = relationship(
-        "ComboAmplifier",
-        back_populates="order_products"
-    )
-
-    processor: Mapped[Processor] = relationship(
-        "Processor",
-        back_populates="order_products"
-    )
-
-    effect: Mapped[EffectPedal] = relationship(
-        "EffectPedal",
-        back_populates="order_products"
     )
 
 
@@ -259,4 +126,34 @@ class Order(Base):
         back_populates="order", 
         cascade="all, delete-orphan",
         lazy="joined"
+    )
+
+
+class ProductItemMixin:
+    """Общие поля для позиций в корзине и заказе"""
+    product_id: Mapped[int] = mapped_column(ForeignKey("product.id", ondelete="SET NULL"), nullable=True)
+    quantity: Mapped[int] = mapped_column(nullable=False)
+    price_at_time: Mapped[float] = mapped_column(Numeric(10, 2))  # замороженная цена!
+
+
+class CartProduct(Base, ProductItemMixin):
+    __tablename__ = "cart_product"
+
+    cart_id: Mapped[int] = mapped_column(ForeignKey("cart.id"), nullable=False)
+
+    cart: Mapped["Cart"] = relationship(
+        "Cart", 
+        back_populates="cart_products"
+    )
+
+
+class OrderProduct(Base, ProductItemMixin):
+    __tablename__ = "order_product"
+
+    order_id: Mapped[int] = mapped_column(ForeignKey("order.id"), nullable=False)
+    status: Mapped[OrderStatus] = mapped_column(nullable=False)
+
+    order: Mapped["Order"] = relationship(
+        "Order", 
+        back_populates="order_products"
     )
