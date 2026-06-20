@@ -1,4 +1,6 @@
+import asyncpg
 from datetime import datetime
+from contextlib import asynccontextmanager
 from typing import Annotated
 from functools import wraps
 from sqlalchemy import Integer, func
@@ -54,3 +56,34 @@ class Base(AsyncAttrs, DeclarativeBase):
         columns = class_mapper(self.__class__).columns
         # Возвращаем словарь всех колонок и их значений
         return {column.key: getattr(self, column.key) for column in columns}
+
+
+class Database:
+    def __init__(self):
+        self.pool = None
+
+    async def init(self):
+        self.pool = await asyncpg.create_pool(
+            user=settings.DB_USER,
+            password=settings.DB_PASSWORD,
+            database=settings.DB_NAME,
+            host=settings.DB_HOST,
+            port=5432,
+            min_size=5,      # минимальное соединений в пуле
+            max_size=20,     # максимальное соединений в пуле
+            max_queries=50000,  # пересоздавать соединение после 50k запросов
+            max_inactive_connection_lifetime=300,  # 5 минут неактивности — закрыть
+            command_timeout=60  # таймаут на запрос
+        )
+
+    async def close(self):
+        if self.pool:
+            await self.pool.close()
+
+    @asynccontextmanager
+    async def acquire(self):
+        async with self.pool.acquire() as conn:
+            yield conn
+
+
+db = Database()

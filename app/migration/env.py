@@ -10,6 +10,12 @@ from alembic import context
 from app.database import Base, DATABASE_URL
 from app.models import *
 
+
+"""
+f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@"
+                f"{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+"""
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config

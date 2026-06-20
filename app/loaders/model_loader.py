@@ -1,6 +1,7 @@
 from abc import ABC
 from typing import Type, Any, ClassVar
 
+from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -31,12 +32,15 @@ class ModelLoader[ModelClass](ABC):
         """
         Создает новый объект
         """
+        logger.debug(f"Process in loader.create")
         item = cls.model(**kwargs)
         session.add(item)
         try:
             await session.commit()
+            logger.debug(f"Category: {item} has been created")
             await session.refresh(item)
         except Exception as e:
+            logger.exception(f"It was exception: {e}")
             await session.rollback()
             raise e
         return item

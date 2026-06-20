@@ -1,36 +1,24 @@
-from typing_extensions import Self
-
-from pydantic import BaseModel, model_validator, constr, conint, confloat
+from pydantic import BaseModel, Field
 
 class ProductDto:
     
     class Create(BaseModel):
-        product_type: str
-        name: constr(max_length=200)
-        description: constr(max_length=700) | None = None
-        quantity: conint(ge=0)
-        price: confloat(gt=0)
+        name: str = Field(max_length=200)
+        quantity: int = Field(ge=0)
+        price: float = Field(gt=0)
+        category_name: str = Field(max_length=100)
+        options: dict[str, str] = Field(default_factory=dict) # Характеристики товара
 
-        @model_validator(mode='after')
-        def validate_product_type(self) -> Self:
-
-            allowed = {"Guitar", "Combo Amplifier", "Processor", "Effect Pedal"}
-            if self.product_type not in allowed:
-                raise ValueError(f'Product Type must be one of {allowed}')
-            return self
+        class Config:
+            title = "ProductCreate"
         
 
     class Update(BaseModel):
-        product_type: str | None = None
-        name: constr(max_length=200) | None = None
-        description: constr(max_length=700) | None = None
-        quantity: conint(ge=0) | None = None
-        price: confloat(gt=0) | None = None
-
-        @model_validator(mode='after')
-        def validate_product_type(self) -> Self:
-
-            allowed = {"Guitar", "Combo Amplifier", "Processor", "Effect Pedal"}
-            if self.product_type and self.product_type not in allowed:
-                raise ValueError(f'Product Type must be one of {allowed}')
-            return self
+        name: str | None = Field(default=None, max_length=200)
+        quantity: int | None = Field(default=None, ge=0)
+        price: float | None = Field(default=None, gt=0)
+        category_name: str | None = Field(default=None, max_length=100)
+        options: dict[str, str] | None = Field(default_factory=dict)
+    
+        class Config:
+            title = "ProductUpdate"

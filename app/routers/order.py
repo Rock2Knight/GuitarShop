@@ -6,7 +6,6 @@ from app.access.order import access_order
 from app.auth_service.auth import get_current_user
 from app.dependencies.cache import get_cache
 from app.dto.order import OrderDto
-from app.loaders.order import OrderLoader
 
 order_router = APIRouter(prefix="/order", tags=["Заказы"])
 
@@ -41,10 +40,10 @@ async def get_order(
         return order_resp     # Если возникла ошибка
 
 
-@order_router.post("/{user_id}", status_code=status.HTTP_201_CREATED)
-async def create_order(user_id: int, auth_user_id = Depends(get_current_user)):
+@order_router.post("/{id}", status_code=status.HTTP_201_CREATED)
+async def create_order(id: int, user_id = Depends(get_current_user)):
 
-    order_dump = {'method': 'post', 'user_id': user_id}
+    order_dump = {'method': 'post', 'id': id}
     return await access_order(**order_dump)
 
 

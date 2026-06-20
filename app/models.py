@@ -71,18 +71,30 @@ class Category(Base):
     parent_id: Mapped[int | None] = mapped_column(ForeignKey("category.id"), nullable=True)
     name: Mapped[str] = mapped_column(nullable=False, unique=True)
 
-    parent: Mapped["Category | None"] = relationship("Category", remote_side=[id], back_populates="children")
+    parent: Mapped["Category | None"] = relationship("Category", remote_side=lambda: Category.id, back_populates="children")
     children: Mapped[list["Category"]] = relationship("Category", back_populates="parent", cascade="all, delete-orphan")
-    attributes: Mapped[list["Attributes"]] = relationship("Attributes", back_populates="category", cascade="all, delete-orphan")
 
 
 class Attributes(Base):
     __tablename__ = "attributes"
 
-    category_id: Mapped[int] = mapped_column(ForeignKey("category.id"), nullable=False)
     name: Mapped[str] = mapped_column(nullable=False, unique=True)
 
-    category: Mapped["Category"] = relationship("Category", back_populates="attributes")
+
+product_categories = Table(
+    "product_categories",
+    Base.metadata,
+    Column('product_id', Integer, ForeignKey('product.id', ondelete='CASCADE'), primary_key=True),
+    Column('category_id', Integer, ForeignKey('category.id', ondelete='CASCADE'), primary_key=True)
+)
+
+
+category_attributes = Table(
+    "category_attributes",
+    Base.metadata,
+    Column('category_id', Integer, ForeignKey('category.id', ondelete='CASCADE'), primary_key=True),
+    Column('attribute_id', Integer, ForeignKey('attributes.id', ondelete='CASCADE'), primary_key=True)
+)
 
 
 product_attr_values = Table(
@@ -141,6 +153,11 @@ class CartProduct(Base, ProductItemMixin):
 
     cart_id: Mapped[int] = mapped_column(ForeignKey("cart.id"), nullable=False)
 
+    product: Mapped["Product"] = relationship(
+        "Product",
+        back_populates="cart_products"
+    )
+
     cart: Mapped["Cart"] = relationship(
         "Cart", 
         back_populates="cart_products"
@@ -155,5 +172,10 @@ class OrderProduct(Base, ProductItemMixin):
 
     order: Mapped["Order"] = relationship(
         "Order", 
+        back_populates="order_products"
+    )
+
+    product: Mapped["Product"] = relationship(
+        "Product", 
         back_populates="order_products"
     )

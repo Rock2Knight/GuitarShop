@@ -2,13 +2,12 @@ from fastapi import APIRouter, Response, status, HTTPException, Depends
 from loguru import logger
 
 from app.cache.redis import RedisCache
-from app.access.base_access import access_model
+from app.access.product import access_product
 from app.auth_service.auth import get_current_user
 from app.dependencies.cache import get_cache
-from app.dto.guitar import GuitarDto
-from app.loaders.product import ProductLoader
+from app.dto.product import ProductDto
 
-product_router = APIRouter(prefix="/product", tags=["Гитары"])
+product_router = APIRouter(prefix="/product", tags=["Товары"])
 
 @product_router.get("/{id}")
 async def get_product(
@@ -27,8 +26,7 @@ async def get_product(
     logger.info(f"Cache MISS for key {cache_key}")
     
     # Получение данных из БД
-    product_resp = await access_model(
-        loader_class=ProductLoader,
+    product_resp = await access_product(
         method='get',
         id=id
     )
@@ -45,21 +43,18 @@ async def get_product(
 
 @product_router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_product(
-    product_dto: GuitarDto.Create,
+    product_dto: ProductDto.Create,
     user_id = Depends(get_current_user)
 ):
 
     product_dump = {'method': 'post', 'dto': product_dto.model_dump()}
-    return await access_model(
-        loader_class=ProductLoader,
-        **product_dump
-    )
+    return await access_product(**product_dump)
 
 
 @product_router.patch("/{id}")
 async def patch_product(
     id: int, 
-    product_dto: GuitarDto.Update, 
+    product_dto: ProductDto.Update, 
     response: Response,
     cache: RedisCache = Depends(get_cache),
     user_id = Depends(get_current_user)
@@ -67,10 +62,7 @@ async def patch_product(
     await cache.delete(f"product:{id}")
 
     product_dump = {'method': 'patch', 'id': id, 'dto': product_dto.model_dump()}
-    product_resp = await access_model(
-        loader_class=ProductLoader,
-        **product_dump
-    )
+    product_resp = await access_product(**product_dump)
     if isinstance(product_resp, HTTPException):
         response.status_code = product_resp.status_code
         raise HTTPException(status_code=product_resp.status_code, detail=product_resp.detail)
@@ -85,10 +77,7 @@ async def delete_product(
 ):
 
     product_dump = {'method': 'delete', 'id': id}
-    product_resp = await access_model(
-        loader_class=ProductLoader,
-        **product_dump
-    )
+    product_resp = await access_product(**product_dump)
     if isinstance(product_resp, HTTPException):
         response.status_code = product_resp.status_code
     return product_resp     # Если возникла ошибка

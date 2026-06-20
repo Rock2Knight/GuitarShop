@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 from app.loaders.model_loader import ModelLoader
 
 async def access_model(
-    loader_class: Type[ModelLoader],  # Класс загрузчика (GuitarLoader, ProcessorLoader и т.д.)
+    loader_class: Type[ModelLoader],  # Класс загрузчика
     **kwargs
 ) -> Optional[dict | HTTPException]:
     """
@@ -32,7 +32,6 @@ async def access_model(
                 return await item.to_dict()
                 
             case "patch":
-                # TODO: исправить баг с PATCH-методом
                 item = await loader_class.update(
                     item_id=kwargs['id'],
                     **kwargs['dto']
