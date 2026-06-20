@@ -40,7 +40,6 @@ class ModelLoader[ModelClass](ABC):
             logger.debug(f"Category: {item} has been created")
             await session.refresh(item)
         except Exception as e:
-            logger.exception(f"It was exception: {e}")
             await session.rollback()
             raise e
         return item

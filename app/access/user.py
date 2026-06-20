@@ -2,8 +2,8 @@ from typing import Optional
 
 from fastapi import HTTPException, status
 
-from app.dto.user import UserDto
 from app.loaders.user import UserLoader
+from app.loaders.cart import CartLoader
 from app.models import User
 from app.logger import logger
 
@@ -18,11 +18,11 @@ async def access_user(**kwargs) -> Optional[User | HTTPException]:
                 user_dump.pop('passhash')
                 return user_dump
             except Exception as e:
-                logger.info(f"Exception: {e}")
                 return HTTPException(status_code=500, detail=e.detail)
         case "post":
             try:
                 user = await UserLoader.create(**kwargs['dto'])
+                await CartLoader.create(user_id=user.id)
                 user_dump = await user.to_dict()
                 user_dump.pop('passhash')
                 return user_dump
@@ -36,7 +36,6 @@ async def access_user(**kwargs) -> Optional[User | HTTPException]:
                 user_dump.pop('passhash')
                 return user_dump
             except Exception as e:
-                logger.debug(f"Details: {e.detail}")
                 return HTTPException(status_code=500, detail=e.detail)
         case "delete":
             try:

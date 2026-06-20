@@ -46,21 +46,6 @@ async def create_order_product(
 
     order_product_dump = {'method': 'post', 'dto': order_product_dto.model_dump()}
     return await access_order_product(**order_product_dump)
-
-
-@order_product_router.patch("/{id}")
-async def patch_order_product(
-    id: int, order_product_dto: OrderProductDto.Update, 
-    response: Response, user_id = Depends(get_current_user)
-):
-
-    order_product_dump = {'method': 'patch', 'id': id, 'dto': order_product_dto.model_dump()}
-    order_product_resp = await access_order_product(**order_product_dump)
-    if isinstance(order_product_resp, HTTPException):
-        response.status_code = order_product_resp.status_code
-        return HTTPException(status_code=order_product_resp.status_code)
-    response.status_code = status.HTTP_201_CREATED
-    return order_product_resp
     
 
 @order_product_router.delete("/{id}")

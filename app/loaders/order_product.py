@@ -1,5 +1,6 @@
 from typing import override
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import connection
@@ -26,3 +27,11 @@ class OrderProductLoader(ModelLoader[OrderProduct]):
         await session.refresh(order_product)  # Обновляем атрибуты
         
         return order_product
+
+
+    @classmethod
+    @connection
+    async def get_all_products_of_order(cls, session: AsyncSession, order_id: int) -> list[OrderProduct]:
+        query = select(cls.model).where(cls.model.order_id == order_id).order_by(cls.model.id)
+        order_products = await session.scalars(query)
+        return order_products.all()

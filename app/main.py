@@ -30,6 +30,7 @@ app.include_router(user_router)
 app.include_router(order_router)
 app.include_router(order_product_router)
 app.include_router(cart_product_router)
+app.include_router(cart_router)
 app.include_router(product_router)
 app.include_router(category_router)
 

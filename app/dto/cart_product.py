@@ -11,9 +11,9 @@ class CartProductDto:
             title = "CartProductCreate"
 
     class Update(BaseModel):
-        cart_id: int | None = Field(gt=0)
-        product_id: int | None = Field(gt=0)
-        quantity: int | None = Field(gt=0)
+        cart_id: int | None = Field(default=None, gt=0)
+        product_id: int | None = Field(default=None, gt=0)
+        quantity: int | None = Field(default=None, gt=0)
 
         class Config:
             title = "CartProductUpdate"

@@ -40,27 +40,11 @@ async def get_order(
         return order_resp     # Если возникла ошибка
 
 
-@order_router.post("/{id}", status_code=status.HTTP_201_CREATED)
-async def create_order(id: int, user_id = Depends(get_current_user)):
+@order_router.post("/", status_code=status.HTTP_201_CREATED)
+async def create_order(user_id = Depends(get_current_user)):
 
-    order_dump = {'method': 'post', 'id': id}
+    order_dump = {'method': 'post', 'user_id': user_id}
     return await access_order(**order_dump)
-
-
-@order_router.patch("/{id}")
-async def patch_order(
-    id: int, order_dto: OrderDto, 
-    response: Response, 
-    user_id = Depends(get_current_user)
-):
-
-    order_dump = {'method': 'patch', 'id': id, 'dto': order_dto.model_dump()}
-    order_resp = await access_order(**order_dump)
-    if isinstance(order_resp, HTTPException):
-        response.status_code = order_resp.status_code
-        return HTTPException(status_code=order_resp.status_code)
-    response.status_code = status.HTTP_201_CREATED
-    return order_resp
     
 
 @order_router.delete("/{id}")
