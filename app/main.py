@@ -2,6 +2,8 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from starlette.middleware.cors import CORSMiddleware
 from loguru import logger
 import uvicorn
 
@@ -34,6 +36,17 @@ app.include_router(cart_router)
 app.include_router(product_router)
 app.include_router(category_router)
 
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://guitarshop.com",
+        "http://localhost:8000",
+        "http://localhost"
+    ],
+    allow_methods=["*"], 
+    allow_headers=["*"]
+)
 app.add_middleware(TimingMiddleware)
 app.add_middleware(LoggingMiddleware)
 
@@ -43,6 +56,10 @@ if __name__ == "__main__":
         "main:app",
         host="0.0.0.0",
         port=8000,
+        #uds="/tmp/uvicorn.sock",
         reload=True,  # Автоперезагрузка для разработки
         log_level="debug",
+        proxy_headers=True,
+        forwarded_allow_ips="*",
+        root_path="/"
     )

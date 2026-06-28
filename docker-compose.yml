@@ -71,6 +71,22 @@ services:
     tty: true                   # Принудительно открыть интерактивный вывод
     stdin_open: true            # Открыть STDIN
 
+  nginx:           # сервис приложения
+    image: nginx:stable-alpine     # настройки сборки
+    container_name: nginx  # имя контейнера
+    ports:
+      - "80:80"              # порты
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf                # место хранения данных под приложение
+    networks:
+      - guitar_shop_network      # сеть, к которой подключается приложение
+    depends_on:                 # настройки зависимостей
+      - backend
+    restart: unless-stopped
+    tty: true                   # Принудительно открыть интерактивный вывод
+    stdin_open: true            # Открыть STDIN
+
+
 volumes:             # настройки томов
   pgdata:            
     driver: local    # Драйвер для тома pgdata
